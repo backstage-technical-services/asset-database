@@ -186,7 +186,7 @@ class ItemClass(models.Model):
     subcategory = models.ForeignKey('Subcategory', on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return str(self.name)
+        return f"{self.subcategory.subcategory} > {self.name}"
 
 
 class Owner(models.Model):
@@ -216,5 +216,5 @@ class Item(models.Model):
         return str(self.id)
 
     def redefine_all_records(self, new_item):
-        for record in self.records_set.all().update():
+        for record in self.records_set.all():
             record.change_item(new_item)

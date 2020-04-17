@@ -106,7 +106,7 @@ function get_records() {
         success : function(json) {
             console.log(json); // log the returned json to the console
             $("#records_table tbody").html(json.records_rendered);
-        //    $("#test_table").html(json.tests_rendered);
+            $("#test_table").html(json.tests_rendered);
             console.log("success"); // another sanity check
         },
 

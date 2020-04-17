@@ -62,12 +62,12 @@ def get_records(request):
         else:
             records = Records.objects.none()
 
-        # tests = [list(x.tests_set.all()) for x in records]
+        tests = [list(x.tests_set.all()) for x in records]
         data = dict()
         data['records_rendered'] = render_to_string('bts_asset_db/partial_records_body.html',
                                                     {'records': records})
-        # data['tests_rendered'] = render_to_string('bts_asset_db/tests_table.html',
-        #                                           {'records': records, 'tests': tests})
+        data['tests_rendered'] = render_to_string('bts_asset_db/tests_table.html',
+                                                  {'records': records, 'tests': tests})
         return JsonResponse(data, safe=False)
 
     else:

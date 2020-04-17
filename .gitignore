@@ -1,6 +1,6 @@
 # Python pycache:
 bts_core/settings.py
-static/
+/static/
 .idea/
 __pycache__/
 node_modules/

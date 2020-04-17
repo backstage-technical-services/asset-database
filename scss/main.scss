@@ -1,0 +1,16 @@
+// main.scss
+
+@import "base/variables";
+@import "base/macros";
+
+@import "vendors-extensions/bootstrap";
+
+@import "vendors/bootstrap/bootstrap";
+@import "vendors/fontawesome/fontawesome";
+@import "vendors/fontawesome/solid";
+
+@import "structures/tables";
+@import "structures/headers";
+@import "structures/forms";
+@import "structures/layout";
+@import "structures/modals";

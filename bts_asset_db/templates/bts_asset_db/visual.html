@@ -1,0 +1,181 @@
+{% extends "bts_asset_db/base.html" %}
+
+{% block title %}PAT Testing - Visual{% endblock %}
+
+{% block body_wrapper %}
+    {% with page_section="visual" page_id="visual" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block fancy_header %}
+    {% with header_main="PAT Results" header_sub="Visual Results" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="top-buttons">
+        <div class="btn-group-vertical btn-group-sm">
+            <a href="{% url 'bts_asset_db:index' %}"
+               class="btn btn-success">
+                PAT
+            </a>
+        </div>
+    </div>
+
+    <div id="field_area" class="row">
+        <div id="visual-form" class="col-12 col-md-6 col-lg-4">
+            <form action="{% url 'bts_asset_db:visual' %}"
+                  method="post"
+                  id="vis_submit_form">
+                <fieldset>
+                    <legend>Submit a visual record</legend>
+                    <div class="form-entry">
+                        {% csrf_token %}
+
+                        <div class="form-row form-group">
+                            <label for="v_item"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ visual_submit_form.item.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ visual_submit_form.item }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <label for="v_tester"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ visual_submit_form.tester.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ visual_submit_form.tester }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <label for="v_supervisor"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ visual_submit_form.supervisor.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ visual_submit_form.supervisor }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <label for="v_notes"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ visual_submit_form.notes.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ visual_submit_form.notes }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <div class="custom-control custom-checkbox col-12">
+                                {{ visual_submit_form.failed }}
+                                <label for="v_failed"
+                                       class="custom-control-label">
+                                    {{ visual_submit_form.failed.label }}:
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <button type="submit" name="visual-submit" class="btn btn-success"><span>Submit</span></button>
+            </form>
+        </div>
+        <div id="repair-form" class="col-12 col-md-6 col-lg-4">
+            <form action="{% url 'bts_asset_db:visual' %}" method="post" id="rep_submit_form">
+                <fieldset>
+                    <legend>Submit a repair record</legend>
+                    <div class="form-entry">
+                        {% csrf_token %}
+
+                        <div class="form-row form-group">
+                            <label for="r_item"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ repair_submit_form.item.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ repair_submit_form.item }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <label for="r_tester"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ repair_submit_form.repairer.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ repair_submit_form.repairer }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <label for="r_supervisor"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ repair_submit_form.supervisor.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ repair_submit_form.supervisor }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <label for="r_notes"
+                                   class="col-12 col-md-5 col-lg-4 col-xl-3">
+                                {{ repair_submit_form.notes.label }}:
+                            </label>
+                            <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ repair_submit_form.notes }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <div class="custom-control custom-checkbox col-12">
+                                {{ repair_submit_form.failed }}
+                                <label for="r_failed"
+                                       class="custom-control-label">
+                                    {{ repair_submit_form.failed.label }}:
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <button type="submit" name="repair-submit" class="btn btn-success"><span>Submit</span></button>
+            </form>
+        </div>
+        <div id="visual-search" class="col-12 col-lg-4">
+            <form action="{% url 'bts_asset_db:records' %}" method="get" id="vis_search_form">
+                <fieldset>
+                    <legend>Search for a visual record</legend>
+                    <div class="form-entry">
+                        <div class="form-row form-group">
+                            <label for="id_search_type"
+                                   class="col-12 col-md-6">
+                                {{ search_form.search_type.label }}:
+                            </label>
+                            <div class="col-12 col-md-6">{{ search_form.search_type }}</div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <label for="id_search_field"
+                                   class="col-12 col-md-6">
+                                {{ search_form.search_field.label }}:
+                            </label>
+                            <div class="col-12 col-md-6">{{ search_form.search_field }}</div>
+                        </div>
+                    </div>
+                </fieldset>
+                <button type="submit" class="btn btn-success"><span>Search</span></button>
+            </form>
+        </div>
+    </div>
+
+    <div id="record_table">
+        <table class="table" id="visual_records_table">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Timestamp</th>
+                    <th>Tester</th>
+                    <th>Supervisor</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% include 'bts_asset_db/partial_visual_records_body.html' %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}

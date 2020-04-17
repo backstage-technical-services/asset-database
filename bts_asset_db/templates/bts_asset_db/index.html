@@ -1,0 +1,117 @@
+{% extends "bts_asset_db/base.html" %}
+
+{% block title %}PAT Testing - Index{% endblock %}
+
+{% block body_wrapper %}
+    {% with page_section="index" page_id="index" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block fancy_header %}
+    {% with header_main="PAT Results" header_sub="Tester Results" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="top-buttons">
+        <div class="btn-group-vertical btn-group-sm">
+            <a href="{% url 'bts_asset_db:visual' %}"
+               class="btn btn-success">
+                Visual
+            </a>
+        </div>
+    </div>
+
+    <div id="field_area">
+        <form action="{% url 'bts_asset_db:records' %}"
+              method="get"
+              id="pat_form">
+            <fieldset class="row">
+                <legend>Search for a PAT record</legend>
+
+                <div class="form-group col-12 col-md-2 pr-md-1">
+                    <label for="id_search_type"
+                           class="sr-only">
+                        {{ form.search_type.label }}
+                    </label>
+                    <div>
+                        {{ form.search_type }}
+                    </div>
+                </div>
+
+                <div class="form-group col-12 col-md-3 px-md-1">
+                    <label for="id_search_field"
+                           class="sr-only">
+                        {{ form.search_field.label }}
+                    </label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <span class="fa fa-search"></span>
+                            </span>
+                        </div>
+                        {{ form.search_field }}
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-success col-4 col-md-1 ml-3 ml-md-1 mb-3">
+                    <span>Search</span>
+                </button>
+            </fieldset>
+        </form>
+    </div>
+
+    <div id="record_table">
+        <table class="table" id="records_table">
+            <thead>
+                <tr>
+                    <th>
+                        <span class="d-none d-lg-table-cell">Item ID</span>
+                        <span class="d-table-cell d-lg-none">ID</span>
+                    </th>
+                    <th>Timestamp</th>
+                    <th class="d-none d-md-table-cell">Site</th>
+                    <th class="d-none d-md-table-cell">Location</th>
+                    <th>Tester</th>
+                    <th class="d-none d-md-table-cell">Testcode 1</th>
+                    <th class="d-none d-md-table-cell">Testcode 2</th>
+                    <th class="d-none d-lg-table-cell">Retest Frequency</th>
+                    <th>View Tests</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% include 'bts_asset_db/partial_records_body.html' %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="modal fade" id="testModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!--<div id="test_table">
+    {% include 'bts_asset_db/tests_table.html' %}
+    </div>-->
+
+{% endblock %}

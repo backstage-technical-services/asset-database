@@ -1,0 +1,25 @@
+{% for record in records %}
+    <tr>
+        <td>{{ record.item_id }}</td>
+        <td>{{ record.timestamp }}</td>
+        <td class="d-none d-md-table-cell">{{ record.site }}</td>
+        <td class="d-none d-md-table-cell">{{ record.location }}</td>
+        <td>{{ record.tester }}</td>
+        <td class="d-none d-md-table-cell">{{ record.testcode_1 }}</td>
+        <td class="d-none d-md-table-cell">{{ record.testcode_2 }}</td>
+        <td class="d-none d-lg-table-cell">{{ record.retest_freq_months }}</td>
+        <td class="align-middle text-center">
+            <a class="btn btn-info"
+               data-toggle="modal"
+               data-target="#testModal"
+               data-id="{{ record.id }}">
+                <span class="fas fa-chart-bar"></span>
+            </a>
+        </td>
+    </tr>
+{% empty %}
+    <tr>
+        <td colspan="9" class="text-center">No records</td>
+    </tr>
+
+{% endfor %}

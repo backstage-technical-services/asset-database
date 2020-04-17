@@ -1,0 +1,17 @@
+.table{
+  border-color: $btsyellow;
+  margin: 1rem auto;
+
+  > thead > tr > th , > tbody > tr > th {
+      border-top-color: $btsyellow;
+      border-bottom-color: $btsyellow;
+      color: $btsyellow;
+      font-weight: 300;
+      margin: 0 auto;
+  }
+
+  > tbody > tr > td {
+      border-top-color: $btsyellow;
+      color: #fff;
+  }
+}

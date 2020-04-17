@@ -1,0 +1,13 @@
+{% for record in records %}
+    <tr class="visual_row">
+        <td>{{ record.item_id }}</td>
+        <td>{{ record.timestamp }}</td>
+        <td>{{ record.tester }}</td>
+        <td>{{ record.supervisor }}</td>
+        <td class="visual_note_cell"><span class="visual_note_span" id="{{ record.id }}">{{ record.notes }}</span></td>
+    </tr>
+{% empty %}
+    <tr id="visual_row">
+        <td colspan="5" class="text-center">No records</td>
+    </tr>
+{% endfor %}

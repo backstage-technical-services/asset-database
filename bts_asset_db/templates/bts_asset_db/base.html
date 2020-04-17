@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        {% block imports %}{% include "bts_asset_db/imports.html" %}{% endblock %}
+        {% block styles %}{% include "bts_asset_db/styles.html" %}{% endblock %}
+        <link rel="shortcut icon" href="{%  static 'bts_asset_db/ico/favicon.ico' %}">
+        <title>{% block title %}Angel Cascarino{% endblock %}</title>
+    </head>
+    {% block body_wrapper %}
+    <body page-section="{{ page_section }}" page-id="{{ page_id }}">
+    {% endblock %}
+        <div class = "container">
+        <header>
+            <div id="header-wrapper">
+                {% block header %}
+                    {% if user.is_authenticated %}
+                        <p class="text-right">
+                            Hello, {{ user.first_name }}
+                            <a href="{% url 'logout' %}"
+                               class="btn-sm btn-warning">
+                                Logout
+                            </a>
+                        </p>
+                    {% else %}
+                        <p class="text-right">
+                            <a href="{% url 'login' %}"
+                               class="btn-sm btn-primary">
+                                Login
+                            </a>
+                        </p>
+                    {% endif %}
+                {% endblock %}
+            </div>
+        </header>
+            <div id="menu-wrapper">
+                {% block menu %}{% endblock %}
+            </div>
+        <main id="site-wrapper">
+            <div id="content-wrapper">
+                {% block fancy_header %}
+                    {% if header_main %}
+                        <h1 class="page-header">{{ header_main }}</h1>
+                    {% endif %}
+                    {% if header_sub %}
+                        <h2 class="page-header">{{ header_sub }}</h2>
+                    {% endif %}
+                {% endblock %}
+
+                {% block error %}
+                    {% if msg_error %}
+                        <div id="error" class="alert alert-primary" role="alert">
+                            {{ msg_error }}
+                        </div>
+                    {% endif %}
+                {% endblock %}
+
+                {% block message %}
+                    {% if msg_general %}
+                        <div id="message" class="alert alert-success" role="alert">
+                            {{ msg_general }}
+                        </div>
+                    {% endif %}
+                {% endblock %}
+                <div id="content">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+        <footer>
+            <div id="footer">
+                {% block footer %}{% endblock %}
+            </div>
+        </footer>
+        </div>
+    {% block post-imports %}{% include "bts_asset_db/post_imports.html" %}{% endblock %}
+    </body>
+</html>

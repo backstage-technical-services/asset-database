@@ -1,0 +1,18 @@
+.modal-content {
+  background-color: $body-bg;
+  color: $body-color;
+
+  > .modal-header, > .modal-footer {
+    background-color: #222222;
+    border: none;
+
+    > .close {
+      color: $body-color;
+    }
+  }
+
+  > .modal-body {
+    border-left: 1px solid #222222;
+    border-right: 1px solid #222222;
+  }
+}

@@ -1,0 +1,44 @@
+{% load pat_extras %}
+
+{% for record in records %}
+    <table class="table" id="records_table_{{ forloop.counter }}">
+        <thead>
+            <tr>
+                <th>Item ID</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Description</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ record.item_id }}</td>
+                <td>{{ record.itemmake }}</td>
+                <td>{{ record.itemmodel }}</td>
+                <td>{{ record.itemdescription }}</td>
+                <td>{{ record.itemnotes }}</td>
+            </tr>
+            <tr>
+                {% for test in tests|index:forloop.counter0 %}
+                    <th>{{ test.test_type|testtranslate }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for test in tests|index:forloop.counter0 %}
+                    <td>{{ test.test_parameter_1|preftranslate:test.test_type|index:0 }}{{ test.test_parameter_1 }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for test in tests|index:forloop.counter0 %}
+                    <td>{{ test.test_parameter_2|preftranslate:test.test_type|index:1 }}{{ test.test_parameter_2 }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for test in tests|index:forloop.counter0 %}
+                    <td>{{ test.test_parameter_3|preftranslate:test.test_type|index:2 }}{{ test.test_parameter_3 }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+{% endfor %}

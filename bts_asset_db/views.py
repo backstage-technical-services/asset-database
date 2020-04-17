@@ -22,7 +22,7 @@ def tokenise_search(search_query):
 
 def index(request):
     context = {'form': ItemForm()}
-    return render(request, 'bts_asset_db/index.html', context)
+    return render(request, 'bts_asset_db/record.html', context)
 
 
 def get_tests(request):
@@ -30,8 +30,8 @@ def get_tests(request):
         record_id = request.GET.get("record")
         record = Records.objects.get(pk=record_id)
         tests = [list(record.tests_set.all())]
-        data = {'tests_rendered': render_to_string('bts_asset_db/tests_table.html',
-                                                  {'records': [record], 'tests': tests})}
+        data = {'tests_rendered': render_to_string('bts_asset_db/partials/record/tests_table.html',
+                                                   {'records': [record], 'tests': tests})}
         return JsonResponse(data, safe=False)
 
 
@@ -64,9 +64,9 @@ def get_records(request):
 
         tests = [list(x.tests_set.all()) for x in records]
         data = dict()
-        data['records_rendered'] = render_to_string('bts_asset_db/partial_records_body.html',
+        data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',
                                                     {'records': records})
-        data['tests_rendered'] = render_to_string('bts_asset_db/tests_table.html',
+        data['tests_rendered'] = render_to_string('bts_asset_db/partials/record/tests_table.html',
                                                   {'records': records, 'tests': tests})
         return JsonResponse(data, safe=False)
 
@@ -165,7 +165,7 @@ def get_visuals(request):
         repair_results = Repairs.objects.filter(filter_function)
 
         records = list(visual_results) + list(repair_results)
-        data = {'records_rendered': render_to_string('bts_asset_db/partial_visual_records_body.html',
+        data = {'records_rendered': render_to_string('bts_asset_db/partials/visual/partial_visual_records_body.html',
                                                      {'records': records})}
         return JsonResponse(data, safe=False)
 

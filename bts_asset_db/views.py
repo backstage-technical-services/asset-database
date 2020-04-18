@@ -21,7 +21,8 @@ def tokenise_search(search_query):
 
 
 def index(request):
-    context = {'form': ItemForm()}
+    context = {'form': ItemForm(),
+               'navbar_search': NavBarSearchForm()}
     return render(request, 'bts_asset_db/record.html', context)
 
 
@@ -77,7 +78,8 @@ def get_records(request):
 def visual(request):
     context = {'visual_submit_form': VisualAddForm(auto_id="v_%s"),
                'repair_submit_form': RepairAddForm(auto_id="r_%s"),
-               'search_form': VisualSearchForm()}
+               'search_form': VisualSearchForm(),
+               'navbar_search': NavBarSearchForm()}
 
     # TODO: Add authentication again:
     #  if request.user.is_authenticated and

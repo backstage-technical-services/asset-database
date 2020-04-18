@@ -1,0 +1,47 @@
+{% block menu %}
+    <nav class="navbar navbar-expand-sm navbar-dark">
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav">
+                {% block nav_location %}
+                    {% if location == "Records" %}
+                        <li class="nav-item active"><span class="sr-only">Current: </span>
+                    {% else %}
+                        <li class="nav-item">
+                    {% endif %}
+                            <a class="nav-link" href="{% url 'bts_asset_db:index' %}">
+                                Records
+                            </a>
+                        </li>
+
+                    {% if location == "Visuals" %}
+                        <li class="nav-item active"><span class="sr-only">Current: </span>
+                    {% else %}
+                        <li class="nav-item">
+                    {% endif %}
+                            <a class="nav-link" href="{% url 'bts_asset_db:visual' %}">
+                                Visuals
+                            </a>
+                        </li>
+                {% endblock %}
+            </ul>
+        </div>
+
+        <div class="col  text-right"
+             id="auth_link">
+            {% include "bts_asset_db/partials/base/auth_link.html" %}
+        </div>
+
+        <div class="col-3" id="search">
+            <form class="form-inline">
+                <div class="input-group">
+                    {{ navbar_search.navbar_search }}
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-warning" type="submit">
+                            <span class="fas fa-search"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </nav>
+{% endblock %}

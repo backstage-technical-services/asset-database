@@ -1,0 +1,17 @@
+{% block auth_link %}
+    {% if user.is_authenticated %}
+        <span>
+            Hello, {{ user.first_name }}
+            <a href="{% url 'logout' %}"
+               class="btn-sm btn-warning">
+                Logout
+            </a>
+        </span>
+    {% else %}
+        <span>
+            <a href="{% url 'login' %}">
+                Login
+            </a>
+        </span>
+    {% endif %}
+{% endblock %}

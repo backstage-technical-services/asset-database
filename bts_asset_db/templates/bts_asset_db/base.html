@@ -14,30 +14,10 @@
     {% endblock %}
         <div class = "container">
         <header>
-            <div id="header-wrapper">
-                {% block header %}
-                    {% if user.is_authenticated %}
-                        <p class="text-right">
-                            Hello, {{ user.first_name }}
-                            <a href="{% url 'logout' %}"
-                               class="btn-sm btn-warning">
-                                Logout
-                            </a>
-                        </p>
-                    {% else %}
-                        <p class="text-right">
-                            <a href="{% url 'login' %}"
-                               class="btn-sm btn-primary">
-                                Login
-                            </a>
-                        </p>
-                    {% endif %}
-                {% endblock %}
+            <div id="menu-wrapper">
+                {% block menu %}{% include "bts_asset_db/partials/base/menu.html" %}{% endblock %}
             </div>
         </header>
-            <div id="menu-wrapper">
-                {% block menu %}{% endblock %}
-            </div>
         <main id="site-wrapper">
             <div id="content-wrapper">
                 {% block fancy_header %}

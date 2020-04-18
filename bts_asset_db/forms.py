@@ -79,3 +79,9 @@ class VisualSearchForm(Form):
                               widget=Select(attrs={'class': 'custom-select'}))
     search_field = CharField(max_length=20,
                              widget=TextInput(attrs={'class': 'form-control'}))
+
+
+class NavBarSearchForm(Form):
+    navbar_search = CharField(max_length=20,
+                              widget=TextInput(attrs={'class': 'form-control',
+                                                      'placeholder': 'Search'}))

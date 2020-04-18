@@ -3,7 +3,7 @@
 {% block title %}PAT Testing - Index{% endblock %}
 
 {% block body_wrapper %}
-    {% with page_section="index" page_id="index" %}
+    {% with page_section="record" page_id="record" %}
         {{ block.super }}
     {% endwith %}
 {% endblock %}
@@ -14,17 +14,13 @@
     {% endwith %}
 {% endblock %}
 
+{% block menu %}
+    {% with location="Records" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
 {% block content %}
-
-    <div class="top-buttons">
-        <div class="btn-group-vertical btn-group-sm">
-            <a href="{% url 'bts_asset_db:visual' %}"
-               class="btn btn-success">
-                Visual
-            </a>
-        </div>
-    </div>
-
     <div id="field_area">
         <form action="{% url 'bts_asset_db:records' %}"
               method="get"

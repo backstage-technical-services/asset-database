@@ -1,0 +1,10 @@
+{% for itemclass in itemclasses %}
+    <tr>
+        <td>{{ itemclass.name }}</td>
+        <td>{{ itemclass.member_item_set.count }}</td>
+    </tr>
+{% empty %}
+    <tr>
+        <td colspan="2" class="text-center">No records</td>
+    </tr>
+{% endfor %}

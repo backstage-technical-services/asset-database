@@ -1,0 +1,61 @@
+{% extends "bts_asset_db/base.html" %}
+
+{% block title %}Asset DB - Search Page{% endblock %}
+
+{% block body_wrapper %}
+    {% with page_section="asset_db" page_id="search" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block fancy_header %}
+    {% with header_main="Asset Database" header_sub="Search Page" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block menu %}
+    {% with page_id="search" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <ul class="list-group col-4" data-contains="departments">
+        {% for department in departments %}
+            <li class="list-group-item list-group-item-bts"
+                data-department="{{ department }}">{{ department }}</li>
+        {% endfor %}
+        </ul>
+        <ul class="list-group col-4" data-contains="categories">
+        {% for category in categories %}
+            <li class="list-group-item list-group-item-bts"
+                data-department="{{ category.department }}"
+                data-category="{{ category.category }}"
+                style="display:none">{{ category.category }}</li>
+        {% endfor %}
+        </ul>
+        <ul class="list-group col-4" data-contains="subcategories">
+        {% for subcategory in subcategories %}
+            <li class="list-group-item list-group-item-bts"
+                data-department="{{ subcategory.category.department }}"
+                data-category="{{ subcategory.category.category }}"
+                data-subcategory="{{ subcategory.subcategory }}"
+                style="display:none">{{ subcategory.subcategory }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    <table class="table table-bts z-index-50 position-absolute"
+           style="top: 0; display: none"
+           id="item_classes_table">
+        <thead>
+            <tr>
+                <th>Item Class</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+{% endblock %}

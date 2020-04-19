@@ -1,0 +1,13 @@
+{% block body_wrapper %}
+    {{ block.super }}
+{% endblock %}
+
+{% block fancy_header %}
+    {% with header_main=header_main header_sub=header_sub %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block menu %}
+    {{ block.super }}
+{% endblock %}

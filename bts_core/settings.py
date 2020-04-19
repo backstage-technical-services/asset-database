@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bts_asset_db.apps.BtsAssetDbConfig',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [

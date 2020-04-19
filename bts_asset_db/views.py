@@ -180,3 +180,25 @@ def update_visual_note(request, vis_id):
             return HttpResponse(status=201)
     else:
         return HttpResponse(status=403)
+
+
+def asset_search(request):
+    departments = Department.objects.all()
+    categories = Category.objects.all()
+    subcategories = Subcategory.objects.all()
+
+    context = {'navbar_search': NavBarSearchForm(),
+               'departments': departments,
+               'categories': categories,
+               'subcategories': subcategories}
+
+    return render(request, "bts_asset_db/asset.html", context)
+
+def itemclasses_search(request):
+    if request.method == "GET":
+        subcategory = request.GET.get('subcategory')
+
+        itemclasses = ItemClass.objects.filter(subcategory__subcategory=subcategory)
+        data = {'item_classes_rendered': render_to_string('bts_asset_db/partials/asset/partial_itemclass_table.html',
+                                                     {'itemclasses': itemclasses})}
+        return JsonResponse(data, safe=False)

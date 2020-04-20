@@ -10,6 +10,10 @@ urlpatterns = [
     path('', views.index, name='index'),
     # ex: records/
     path('records/', views.get_records, name='records'),
+    # ex: assets/
+    path('assets/', views.asset_search, name='assets'),
+    # ex: assets/itemclasses/
+    path('assets/itemclasses/', views.itemclasses_search, name='itemclasses'),
     # ex: tests/
     path('tests/', views.get_tests, name='tests'),
     # ex: visual/

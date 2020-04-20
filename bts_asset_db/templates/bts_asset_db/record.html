@@ -3,7 +3,7 @@
 {% block title %}PAT Testing - Index{% endblock %}
 
 {% block body_wrapper %}
-    {% with page_section="record" page_id="record" %}
+    {% with page_section="index" page_id="index" %}
         {{ block.super }}
     {% endwith %}
 {% endblock %}
@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block menu %}
-    {% with location="Records" %}
+    {% with page_id="record" %}
         {{ block.super }}
     {% endwith %}
 {% endblock %}
@@ -62,7 +62,7 @@
     </div>
 
     <div id="record_table">
-        <table class="table" id="records_table">
+        <table class="table table-bts" id="records_table">
             <thead>
                 <tr>
                     <th>
@@ -86,28 +86,40 @@
     </div>
 
 
-    <div class="modal fade" id="testModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          </div>
+    <div class="modal fade"
+         id="testModal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="testResultModal"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl"
+             role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="testResultModal">
+                        Modal title
+                    </h5>
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
 
-    <!--<div id="test_table">
+    <div id="test_table">
     {% include 'bts_asset_db/partials/record/tests_table.html' %}
-    </div>-->
+    </div>
 
 {% endblock %}

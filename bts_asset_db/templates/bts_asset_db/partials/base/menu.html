@@ -3,7 +3,7 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav">
                 {% block nav_location %}
-                    {% if location == "Records" %}
+                    {% if page_id == "record" %}
                         <li class="nav-item active"><span class="sr-only">Current: </span>
                     {% else %}
                         <li class="nav-item">
@@ -13,7 +13,7 @@
                             </a>
                         </li>
 
-                    {% if location == "Visuals" %}
+                    {% if page_id == "visual" %}
                         <li class="nav-item active"><span class="sr-only">Current: </span>
                     {% else %}
                         <li class="nav-item">
@@ -31,7 +31,7 @@
             {% include "bts_asset_db/partials/base/auth_link.html" %}
         </div>
 
-        <div class="col-3" id="search">
+        <div class="col-9 col-md-3" id="search">
             <form class="form-inline">
                 <div class="input-group">
                     {{ navbar_search.navbar_search }}

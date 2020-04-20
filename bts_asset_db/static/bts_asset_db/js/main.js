@@ -1,10 +1,13 @@
-$(function(){
-    $('#visual_records_table').on("click", "span.visual_note_span", function()
+$(function()
+{
+    const vis_records_table = $('#visual_records_table');
+
+    vis_records_table.on("click", "span.visual_note_span", function()
         {
             convert_text_to_input($(this), "visual_note_input").css("color", "black");
         }
     );
-    $('#visual_records_table').on("click", "td.visual_note_cell", function()
+    vis_records_table.on("click", "td.visual_note_cell", function()
         {
             if ($(this).children("span").html() === "")
             {
@@ -12,25 +15,145 @@ $(function(){
             }
         }
     );
-    $('#visual_records_table').on("blur", "span.visual_note_input", function()
+    vis_records_table.on("blur", "span.visual_note_input", function()
         {
             convert_input_to_text($(this), "visual_note_span").css("color", "white");
             update_notes($(this));
         }
     );
-    // Submit post on submit
-    $('#pat_form').on('submit', function(event){
+
+    $('#pat_form').on('submit', function(event)
+    {
         event.preventDefault();
-        console.log("form submitted!");  // sanity check
+        console.log("form submitted!");
         get_records();
     });
-    // Submit post on submit
-    $('#vis_search_form').on('submit', function(event){
+
+    $('#vis_search_form').on('submit', function(event)
+    {
         event.preventDefault();
-        console.log("form submitted!");  // sanity check
+        console.log("form submitted!");
         get_visual_records();
     });
+
+    $('#testModal').on('show.bs.modal', function (event)
+    {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var record = button.data('id') // Extract info from data-* attributes
+        // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+        // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+        var modal = $(this)
+        modal.find('.modal-title').text('Showing tests for record ID: ' + record)
+        get_tests(modal, record)
+    })
+
+    $('.list-group-item-bts').on('click', {elem: $(this)}, function(){
+        chooseCategory($(this));
+    });
 });
+
+function demoteCategory({sibling_opacity, time})
+{
+    $(this).siblings().animate(
+        {
+            opacity: sibling_opacity
+        },
+        time,
+        function()
+        {
+            $(this).css("pointer-events", "");
+        }
+    );
+
+    $(this).animate(
+        {
+            "top": "0",
+            "background-color": "#222"
+        },
+        time,
+        function()
+        {
+            $(this).removeClass("chosen-category");
+        }
+    );
+}
+
+function promoteCategory({sibling_opacity, time})
+{
+    const elemOffset = $(this).position().top + $(this).outerHeight();
+    $(this).siblings().animate(
+        {
+            opacity: sibling_opacity
+        },
+        time,
+        function()
+        {
+            $(this).css("pointer-events", "none");
+        }
+    );
+
+    $(this).animate(
+        {
+            "top": "-=" + elemOffset,
+            "background-color": "#000"
+        },
+        time,
+        function()
+        {
+            $(this).addClass("chosen-category");
+        }
+
+    );
+}
+
+function chooseCategory(elem)
+{
+    if (elem.hasClass("chosen-category"))
+    {
+        demoteCategory.call(elem, {sibling_opacity:1, time:500});
+
+        if (elem.parent().data("contains") === "departments")
+        {
+            const piblings = elem.parent().siblings();
+
+            piblings.children("li[data-department=" + elem.data("department") + "]")
+                .fadeOut();
+
+            piblings.children(".chosen-category")
+                .each(function(i) {demoteCategory.call($(this), {sibling_opacity:1, time:0})});
+        }
+        else if (elem.parent().data("contains") === "categories")
+        {
+            const piblings = elem.parent().siblings("ul[data-contains='subcategories']");
+
+            piblings.children("li[data-category=" + elem.data("category") + "][data-department=" + elem.data("department") + "]")
+                .fadeOut();
+
+            piblings.children(".chosen-category")
+                .each(function(i) {demoteCategory.call($(this), {sibling_opacity:1, time:0})});
+        }
+
+        $("#item_classes_table").fadeOut(500, function(){console.log("Complete!")});
+    }
+    else
+    {
+        promoteCategory.call(elem, {sibling_opacity:0, time:500})
+
+        elem.parent("ul[data-contains='departments']")
+            .siblings("ul[data-contains='categories']")
+            .children("li[data-department=" + elem.attr("data-department") + "]")
+            .fadeIn();
+        elem.parent("ul[data-contains='categories']")
+            .siblings("ul[data-contains='subcategories']")
+            .children("li[data-category=" + elem.attr("data-category") + "][data-department=" + elem.attr("data-department") + "]")
+            .fadeIn();
+
+        if (elem.parent().data("contains") === "subcategories")
+        {
+            get_item_classes(elem.data("subcategory"));
+        }
+    }
+}
 
 function update_notes(affected_span)
 {
@@ -72,7 +195,29 @@ function convert_input_to_text(object, new_class)
     return object;
 }
 
-function get_visual_records() {
+function get_item_classes(subcategory)
+{
+    console.log("get_visual_records is working!");
+    $.ajax({
+        url : "itemclasses/",
+        type: "GET",
+        data:
+            {
+                subcategory : subcategory
+            },
+
+        success: function(json)
+        {
+            console.log(json);
+            $("#item_classes_table tbody").html(json.item_classes_rendered);
+            console.log("success");
+            $("#item_classes_table").fadeIn(500, function(){console.log("Complete!")});
+        }
+    })
+}
+
+function get_visual_records()
+{
     console.log("get_visual_records is working!");
     $.ajax({
         url : "search/",
@@ -91,8 +236,9 @@ function get_visual_records() {
         }
     })
 }
-// AJAX for reading
-function get_records() {
+
+function get_records()
+{
     console.log("get_records is working!"); // sanity check
     $.ajax({
         url : "records/", // the endpoint
@@ -106,7 +252,7 @@ function get_records() {
         success : function(json) {
             console.log(json); // log the returned json to the console
             $("#records_table tbody").html(json.records_rendered);
-        //    $("#test_table").html(json.tests_rendered);
+            $("#test_table").html(json.tests_rendered);
             console.log("success"); // another sanity check
         },
 
@@ -119,7 +265,8 @@ function get_records() {
     });
 }
 
-function get_tests(modal, record_id){
+function get_tests(modal, record_id)
+{
     console.log("get_tests is working!"); // sanity check
     $.ajax({
         url : "tests/", // the endpoint
@@ -137,17 +284,8 @@ function get_tests(modal, record_id){
     });
 }
 
-$('#testModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget) // Button that triggered the modal
-    var record = button.data('id') // Extract info from data-* attributes
-    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-    var modal = $(this)
-    modal.find('.modal-title').text('Showing tests for record ID: ' + record)
-    get_tests(modal, record)
-})
-
-$(function() {
+$(function()
+{
     // This function gets cookie with a given name
     function getCookie(name) {
         var cookieValue = null;

@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block menu %}
-    {% with location="Visuals" %}
+    {% with page_id="visual" %}
         {{ block.super }}
     {% endwith %}
 {% endblock %}
@@ -158,7 +158,7 @@
     </div>
 
     <div id="record_table">
-        <table class="table" id="visual_records_table">
+        <table class="table table-bts" id="visual_records_table">
             <thead>
                 <tr>
                     <th>Item ID</th>

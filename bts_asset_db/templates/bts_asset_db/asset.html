@@ -25,23 +25,23 @@
         <ul class="list-group col-4" data-contains="departments">
         {% for department in departments %}
             <li class="list-group-item list-group-item-bts"
-                data-department="{{ department }}">{{ department }}</li>
+                data-department="{{ department.id }}">{{ department.department }}</li>
         {% endfor %}
         </ul>
         <ul class="list-group col-4" data-contains="categories">
         {% for category in categories %}
             <li class="list-group-item list-group-item-bts"
-                data-department="{{ category.department }}"
-                data-category="{{ category.category }}"
+                data-department="{{ category.department.id }}"
+                data-category="{{ category.id }}"
                 style="display:none">{{ category.category }}</li>
         {% endfor %}
         </ul>
         <ul class="list-group col-4" data-contains="subcategories">
         {% for subcategory in subcategories %}
             <li class="list-group-item list-group-item-bts"
-                data-department="{{ subcategory.category.department }}"
-                data-category="{{ subcategory.category.category }}"
-                data-subcategory="{{ subcategory.subcategory }}"
+                data-department="{{ subcategory.category.department.id }}"
+                data-category="{{ subcategory.category.id }}"
+                data-subcategory="{{ subcategory.id }}"
                 style="display:none">{{ subcategory.subcategory }}</li>
         {% endfor %}
         </ul>

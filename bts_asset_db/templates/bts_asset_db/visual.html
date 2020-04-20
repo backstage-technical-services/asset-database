@@ -21,16 +21,6 @@
 {% endblock %}
 
 {% block content %}
-
-    <div class="top-buttons">
-        <div class="btn-group-vertical btn-group-sm">
-            <a href="{% url 'bts_asset_db:index' %}"
-               class="btn btn-success">
-                PAT
-            </a>
-        </div>
-    </div>
-
     <div id="field_area" class="row">
         <div id="visual-form" class="col-12 col-md-6 col-lg-4">
             <form action="{% url 'bts_asset_db:visual' %}"

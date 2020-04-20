@@ -151,7 +151,6 @@ function chooseCategory(elem)
         if (elem.parent().data("contains") === "subcategories")
         {
             get_item_classes(elem.data("subcategory"));
-            $("#item_classes_table").fadeIn(500, function(){console.log("Complete!")});
         }
     }
 }
@@ -212,6 +211,7 @@ function get_item_classes(subcategory)
             console.log(json);
             $("#item_classes_table tbody").html(json.item_classes_rendered);
             console.log("success");
+            $("#item_classes_table").fadeIn(500, function(){console.log("Complete!")});
         }
     })
 }

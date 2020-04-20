@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import include, path
 from django.conf.urls import url, include
 from rest_framework import routers, serializers, viewsets
+from . import settings
 
 
 # Serializers define the API representation.
@@ -25,15 +26,19 @@ router.register(r'users', UserViewSet)
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 
-# urlpatterns = [
-#     path('', include('bts_asset_db.urls')),
-#     path('admin/', admin.site.urls),
-#     path('accounts/', include('django.contrib.auth.urls')),
-# ]
-
 urlpatterns = [
-    url(r'^', include('bts_asset_db.urls')),
-    url(r'^api/', include(router.urls)),
-    url(r'^admin/', admin.site.urls),
-    url(r'^accounts/', include('django.contrib.auth.urls'))
+    path('', include('bts_asset_db.urls')),
+    path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),
+    path('accounts/', include('django.contrib.auth.urls'))
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [path('debug', include(debug_toolbar.urls))] + urlpatterns
+
+# urlpatterns = [
+#     url(r'^', include('bts_asset_db.urls')),
+#     url(r'^api/', include(router.urls)),
+#     url(r'^admin/', admin.site.urls),
+#     url(r'^accounts/', include('django.contrib.auth.urls'))

@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+from django.db import connection, connections
 from django.db.models import Q
 from .forms import *
 from .models import *
@@ -29,7 +30,7 @@ def index(request):
 def get_tests(request):
     if request.method == "GET":
         record_id = request.GET.get("record")
-        record = Records.objects.get(pk=record_id)
+        record = Records.objects.select_related("itemmake", "itemmodel", "itemdescription", "itemnotes").get(pk=record_id)
         tests = [list(record.tests_set.all())]
         data = {'tests_rendered': render_to_string('bts_asset_db/partials/record/tests_table.html',
                                                    {'records': [record], 'tests': tests})}
@@ -56,9 +57,9 @@ def get_records(request):
             filter_functions = Q(item_id=None)
 
         if filter_functions:
-            records = Records.objects.all()
+            records = Records.objects.all().order_by('-timestamp')
             for filter_function in filter_functions:
-                qs = Records.objects.filter(filter_function)
+                qs = Records.objects.filter(filter_function).select_related("tester")
                 records &= qs
         else:
             records = Records.objects.none()
@@ -149,24 +150,30 @@ def get_visuals(request):
         search_type = request.GET.get("search_type")
         search_query = request.GET.get("search_query")
 
-        if search_type == "item_id":
-            filter_function = Q(item_id=search_query)
-        elif search_type == "tester_id":
-            filter_function = Q(tester__first_name__icontains=search_query) | \
-                              Q(tester__last_name__icontains=search_query)
-        elif search_type == "supervisor_id":
-            filter_function = Q(supervisor__first_name__icontains=search_query) | \
-                              Q(supervisor__last_name__icontains=search_query)
-        elif search_type == "repairer_id":
-            filter_function = Q(repairer__first_name__icontains=search_query) | \
-                              Q(repairer__first_name__icontains=search_query)
+        tokens = tokenise_search(search_query)
+        records = VisualTests.objects.all().order_by('-timestamp')
+        if tokens:
+            for token in tokens:
+                if search_type == "item_id":
+                    filter_function = Q(item_id=token)
+                elif search_type == "tester_id":
+                    filter_function = Q(tester__first_name__icontains=token) | \
+                                      Q(tester__last_name__icontains=token)
+                elif search_type == "supervisor_id":
+                    filter_function = Q(supervisor__first_name__icontains=token) | \
+                                      Q(supervisor__last_name__icontains=token)
+                elif search_type == "repairer_id":
+                    filter_function = Q(repairer__first_name__icontains=token) | \
+                                      Q(repairer__first_name__icontains=token)
+                else:
+                    filter_function = Q(item_id=None)
+
+                visual_results = VisualTests.objects.filter(filter_function).select_related("tester", "supervisor")
+                # repair_results = Repairs.objects.filter(filter_function).select_related("repairer", "supervisor")
+
+                records &= visual_results  # + list(repair_results)
         else:
-            filter_function = Q(item_id=None)
-
-        visual_results = VisualTests.objects.filter(filter_function)
-        repair_results = Repairs.objects.filter(filter_function)
-
-        records = list(visual_results) + list(repair_results)
+            records = VisualTests.objects.none()
         data = {'records_rendered': render_to_string('bts_asset_db/partials/visual/partial_visual_records_body.html',
                                                      {'records': records})}
         return JsonResponse(data, safe=False)
@@ -185,9 +192,9 @@ def update_visual_note(request, vis_id):
 
 
 def asset_search(request):
-    departments = Department.objects.all()
-    categories = Category.objects.all()
-    subcategories = Subcategory.objects.all()
+    departments = Department.objects.all().order_by("department")
+    categories = Category.objects.all().select_related("department").order_by("category")
+    subcategories = Subcategory.objects.all().select_related("category", "category__department").order_by("subcategory")
 
     context = {'navbar_search': NavBarSearchForm(),
                'departments': departments,
@@ -196,11 +203,14 @@ def asset_search(request):
 
     return render(request, "bts_asset_db/asset.html", context)
 
+
 def itemclasses_search(request):
     if request.method == "GET":
         subcategory = request.GET.get('subcategory')
 
-        itemclasses = ItemClass.objects.filter(subcategory__subcategory=subcategory)
+        itemclasses = ItemClass.objects.filter(subcategory_id=subcategory)\
+                                       .prefetch_related("member_item_set")\
+                                       .order_by("name")
         data = {'item_classes_rendered': render_to_string('bts_asset_db/partials/asset/partial_itemclass_table.html',
                                                      {'itemclasses': itemclasses})}
         return JsonResponse(data, safe=False)

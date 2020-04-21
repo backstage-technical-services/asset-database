@@ -6,5 +6,6 @@
     "bootstrap": "^4.4.1",
     "jquery": "^3.5.0",
     "popper.js": "^1.16.1"
-  }
+  },
+  "scripts": {"release": "manage.py collectstatic --noinput && pip freeze > requirements.txt && git add . && git commit --message=\"[AUTO] Released new version\" && gcloud app deploy --quiet"}
 }

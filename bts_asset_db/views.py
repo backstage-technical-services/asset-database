@@ -201,12 +201,11 @@ def asset_search(request):
 
 def itemclass_info(request, itemclass_id):
     if request.method == "GET":
-
         itemclass = ItemClass.objects.get(pk=itemclass_id)
+        data = {'rendered': render_to_string('bts_asset_db/partials/asset/partial_itemclass.html',
+                                             {'itemclass': itemclass})}
 
-        data = {'item_class_rendered': render_to_string('bts_asset_db/partials/asset/partial_itemclass.html',
-                                                        {'itemclass': itemclass})}
-        return JsonResponse(data, safe=False)
+        return JsonResponse(data, safe='False')
 
 
 def get_departments(request):
@@ -237,7 +236,7 @@ def get_itemclasses(request):
         subcategory_id = request.GET.get('subcategory_id')
         itemclasses = ItemClass.objects.filter(subcategory_id=subcategory_id) \
                                        .prefetch_related("member_item_set") \
-                                       .annotate(quantity=Count('member_item_set')) \
-                                       .values()
-        data = json.dumps(list(itemclasses), cls=DjangoJSONEncoder)
-        return HttpResponse(data, content_type='application/json')
+                                       .annotate(quantity=Count('member_item_set'))
+        rendered = render_to_string('bts_asset_db/partials/asset/partial_itemclass_table.html', {'itemclasses': itemclasses})
+        data = {"rendered": rendered}
+        return JsonResponse(data, safe='False')

@@ -47,14 +47,20 @@ $(function()
         get_tests(modal, record)
     })
 
-    $('.list-group-container').on('click', '.list-group-item-bts', {elem: $(this)}, function(){
+    $('.list-group-container').on('click', '.list-group-item-bts', function(){
         chooseCollection($(this));
     });
 
-    $('#item_classes_table').on('click', '.item_class_bts', {elem: $(this)}, function(){
+    $('#item_container').on('click', '.item-class-bts', function()
+    {
         console.log("Itemclass clicked")
-        get_item_class_info($(this).data("itemclass"));
+        chooseItemclass($(this));
     })
+
+    // $('#item_classes_table').on('click', '.item_class_bts', {elem: $(this)}, function(){
+    //     console.log("Itemclass clicked")
+    //     get_item_class_info($(this).data("itemclass"));
+    // })
 
     if ($('body').data("page-section") === "asset_db" &&
         $('body').data("page-id") === "search")
@@ -210,60 +216,16 @@ async function populateSubcategories(category_id)
 
 async function populateItemclasses(subcategory_id)
 {
-    const itemclass_list = $('div#item_classes_table_container');
+    const itemclass_list = $('div#item_container');
     const itemclasses = await getJSResponseFromEndpoint('itemclasses/', {subcategory_id:subcategory_id});
     generateItemclassTable(itemclass_list, itemclasses);
 }
 
 function generateItemclassTable(itemclass_list, itemclasses)
 {
+    console.log(itemclasses)
     itemclass_list.empty()
-
-    let itemclass_table = document.createElement('table');
-        itemclass_table.className = "table table-bts z-index-50 position-absolute";
-        itemclass_table.style.top = "0px";
-        itemclass_table.id = "item_classes_table";
-
-        let h = document.createElement("thead");
-
-            let r = document.createElement("tr");
-
-                let t_class = document.createElement("th");
-                    t_class.innerHTML = "Item Class";
-
-                let t_quant = document.createElement("th");
-                    t_quant.innerHTML = "Quantity";
-
-                r.append(t_class);
-                r.append(t_quant);
-
-            h.append(r);
-
-        let b = document.createElement("tbody");
-            for (const itemclass of itemclasses)
-            {
-                console.log(itemclass)
-                let new_itemclass = document.createElement("tr");
-                    new_itemclass.className = "item-class-bts";
-                    new_itemclass.dataset.id = itemclass.pk;
-
-                    let ic_name = document.createElement("td");
-                        ic_name.innerHTML = itemclass.name;
-
-                    let ic_quant = document.createElement("td");
-                        ic_quant.innerHTML = itemclass.quantity;
-
-                    new_itemclass.append(ic_name);
-                    new_itemclass.append(ic_quant);
-
-                b.append(new_itemclass);
-            }
-
-        itemclass_table.append(h);
-        itemclass_table.append(b);
-
-    itemclass_list.append(itemclass_table);
-
+    itemclass_list.html(itemclasses.rendered)
 }
 
 function showElement(elem)
@@ -311,7 +273,7 @@ function showSubcategories()
 
 function showItemclasses()
 {
-    showElement($('div#item_classes_table_container'));
+    showElement($('div#item_container'));
 }
 
 function hideCategories()
@@ -326,9 +288,27 @@ function hideSubcategories()
     hideItemclasses();
 }
 
-function hideItemclasses()
+async function hideItemclasses()
 {
-    hideElement($('div#item_classes_table_container'));
+    await hideElement($('div#item_container'));
+}
+
+async function chooseItemclass(elem)
+{
+    const itemclass_id = elem.data('id');
+    const formatted_itemclass = await getJSResponseFromEndpoint('itemclasses/' + itemclass_id + '/', {})
+    populateItemclass(formatted_itemclass.rendered);
+}
+
+function populateItemclass(render)
+{
+    hideItemclasses();
+
+    $('div#item_container').promise().done(function()
+    {
+        $('div#item_container').html(render);
+        showItemclasses();
+    });
 }
 
 function update_notes(affected_span)
@@ -369,27 +349,6 @@ function convert_input_to_text(object, new_class)
     object.html(content)
           .attr("class", new_class);
     return object;
-}
-
-function get_item_classes(subcategory)
-{
-    console.log("get_visual_records is working!");
-    $.ajax({
-        url : "itemclasses/",
-        type: "GET",
-        data:
-            {
-                subcategory : subcategory
-            },
-
-        success: function(json)
-        {
-            console.log(json);
-            $("#item_classes_table tbody").html(json.item_classes_rendered);
-            console.log("success");
-            $("#item_classes_table_container").fadeIn(500, function(){console.log("Complete!")});
-        }
-    })
 }
 
 function get_item_class_info(itemclass)

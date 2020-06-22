@@ -1,9 +1,12 @@
+import json
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import connection, connections
-from django.db.models import Q
+from django.db.models import Q, F, Count
 from .forms import *
 from .models import *
 
@@ -64,12 +67,12 @@ def get_records(request):
         else:
             records = Records.objects.none()
 
-        # tests = [list(x.tests_set.all()) for x in records]
+        tests = [list(x.tests_set.all()) for x in records]
         data = dict()
         data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',
                                                     {'records': records})
-        # data['tests_rendered'] = render_to_string('bts_asset_db/partials/record/tests_table.html',
-        #                                           {'records': records, 'tests': tests})
+        data['tests_rendered'] = render_to_string('bts_asset_db/partials/record/tests_table.html',
+                                                   {'records': records, 'tests': tests})
         return JsonResponse(data, safe=False)
 
     else:
@@ -192,25 +195,49 @@ def update_visual_note(request, vis_id):
 
 
 def asset_search(request):
-    departments = Department.objects.all().order_by("department")
-    categories = Category.objects.all().select_related("department").order_by("category")
-    subcategories = Subcategory.objects.all().select_related("category", "category__department").order_by("subcategory")
-
-    context = {'navbar_search': NavBarSearchForm(),
-               'departments': departments,
-               'categories': categories,
-               'subcategories': subcategories}
-
+    context = {'navbar_search': NavBarSearchForm()}
     return render(request, "bts_asset_db/asset.html", context)
 
 
-def itemclasses_search(request):
+def itemclass_info(request, itemclass_id):
     if request.method == "GET":
-        subcategory = request.GET.get('subcategory')
 
-        itemclasses = ItemClass.objects.filter(subcategory_id=subcategory)\
-                                       .prefetch_related("member_item_set")\
-                                       .order_by("name")
-        data = {'item_classes_rendered': render_to_string('bts_asset_db/partials/asset/partial_itemclass_table.html',
-                                                     {'itemclasses': itemclasses})}
+        itemclass = ItemClass.objects.get(pk=itemclass_id)
+
+        data = {'item_class_rendered': render_to_string('bts_asset_db/partials/asset/partial_itemclass.html',
+                                                        {'itemclass': itemclass})}
         return JsonResponse(data, safe=False)
+
+
+def get_departments(request):
+    if request.method == "GET":
+        departments = Department.objects.all()
+        data = serializers.serialize('json', departments)
+        return HttpResponse(data, content_type='application/json')
+
+
+def get_categories(request):
+    if request.method == "GET":
+        department_id = request.GET.get('department_id')
+        categories = Category.objects.filter(department_id=department_id)
+        data = serializers.serialize('json', categories)
+        return HttpResponse(data, content_type='application/json')
+
+
+def get_subcategories(request):
+    if request.method == "GET":
+        category_id = request.GET.get('category_id')
+        subcategories = Subcategory.objects.filter(category_id=category_id)
+        data = serializers.serialize('json', subcategories)
+        return HttpResponse(data, content_type='application/json')
+
+
+def get_itemclasses(request):
+    if request.method == "GET":
+        subcategory_id = request.GET.get('subcategory_id')
+        itemclasses = ItemClass.objects.filter(subcategory_id=subcategory_id) \
+                                       .prefetch_related("member_item_set") \
+                                       .annotate(quantity=Count('member_item_set')) \
+                                       .values()
+        data = json.dumps(list(itemclasses), cls=DjangoJSONEncoder)
+        return HttpResponse(data, content_type='application/json')

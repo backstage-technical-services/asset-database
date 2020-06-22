@@ -1,5 +1,6 @@
 {% for itemclass in itemclasses %}
-    <tr>
+    <tr class="item_class_bts"
+        data-itemclass="{{ itemclass.id }}">
         <td>{{ itemclass.name }}</td>
         <td>{{ itemclass.member_item_set.count }}</td>
     </tr>

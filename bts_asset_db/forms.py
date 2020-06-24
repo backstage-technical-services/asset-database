@@ -1,7 +1,7 @@
 from django.forms import *
 from django.forms.utils import ErrorList
 from django.core.exceptions import ObjectDoesNotExist
-from .models import VisualTests, Item, Repairs
+from .models import VisualTest, Item, Repair
 
 
 class MuteErrorList(ErrorList):
@@ -21,7 +21,7 @@ class ItemForm(Form):
 
 class VisualAddForm(ModelForm):
     class Meta:
-        model = VisualTests
+        model = VisualTest
         fields = ['tester', 'item', 'supervisor', 'notes', 'failed']
         widgets = {'tester': Select(attrs={'class': 'custom-select'}),
                    'item': TextInput(attrs={'class': 'form-control'}),
@@ -33,7 +33,7 @@ class VisualAddForm(ModelForm):
         data = self.cleaned_data['item']
 
         try:
-            result = Item.objects.get(pk=data)
+            result = Item.objects.get(asset_id=data)
         except ObjectDoesNotExist:
             raise ValidationError(
                 'Invalid item: %(item)s',
@@ -46,7 +46,7 @@ class VisualAddForm(ModelForm):
 
 class RepairAddForm(ModelForm):
     class Meta:
-        model = Repairs
+        model = Repair
         fields = ['repairer', 'item', 'supervisor', 'notes', 'failed']
         widgets = {'repairer': Select(attrs={'class': 'custom-select'}),
                    'item': TextInput(attrs={'class': 'form-control'}),
@@ -58,7 +58,7 @@ class RepairAddForm(ModelForm):
         data = self.cleaned_data['item']
 
         try:
-            result = Item.objects.get(pk=data)
+            result = Item.objects.get(asset_id=data)
         except ObjectDoesNotExist:
             raise ValidationError(
                 'Invalid item: %(item)s',

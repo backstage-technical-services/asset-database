@@ -15,13 +15,9 @@
                  data-parent="#accordion">
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-2">Make:</dt>
-                        <dd class="col-sm-4">{{ itemclass.make }}</dd>
                         <dt class="col-sm-3">Quantity:</dt>
                         <dd class="col-sm-3">{{ itemclass.quantity }}</dd>
 
-                        <dt class="col-sm-2">Model:</dt>
-                        <dd class="col-sm-4">{{ itemclass.model }}</dd>
                         <dt class="col-sm-3">In Service:</dt>
                         <dd class="col-sm-3">{{ itemclass.quantity }}</dd>
 
@@ -43,10 +39,17 @@
                             <tbody>
                                 {% for item in itemclass.member_item_set.all %}
                                     <tr>
-                                        <td>{{ item.id }}</td>
+                                        <td>
+                                            <a class="btn btn-info"
+                                               data-toggle="modal"
+                                               data-target="#item_modal"
+                                               data-id="{{ item.id }}">
+                                                <span>{{ item.asset_id }}</span>
+                                            </a>
+                                        </td>
                                         <td>Not Implemented</td>
                                         <td>{{ item.storage }}</td>
-        {#                                <td>{{ item.owner.name }}</td>#}
+        {#                              <td>{{ item.owner.name }}</td>#}
                                     </tr>
                                 {% endfor %}
                             </tbody>

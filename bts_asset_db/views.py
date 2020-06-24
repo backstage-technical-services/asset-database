@@ -33,8 +33,8 @@ def index(request):
 def get_tests(request):
     if request.method == "GET":
         record_id = request.GET.get("record")
-        record = Records.objects.select_related("itemmake", "itemmodel", "itemdescription", "itemnotes").get(pk=record_id)
-        tests = [list(record.tests_set.all())]
+        record = Record.objects.select_related('item').get(pk=record_id)
+        tests = [list(record.pattest_set.all())]
         data = {'tests_rendered': render_to_string('bts_asset_db/partials/record/tests_table.html',
                                                    {'records': [record], 'tests': tests})}
         return JsonResponse(data, safe=False)
@@ -46,28 +46,28 @@ def get_records(request):
         search_query = request.GET.get('search_query')
 
         if search_type == "item_id":
-            filter_functions = [Q(item_id=search_query)]
+            filter_functions = [Q(item__asset_id=search_query)]
         elif search_type == "string_data":
             tokens = tokenise_search(search_query)
-            filter_functions = [Q(itemmake__make__icontains=token) |
-                                Q(itemmodel__model__icontains=token) |
-                                Q(itemdescription__asset_description__icontains=token) |
-                                Q(itemgroup__asset_group__icontains=token) |
-                                Q(itemnotes__notes__icontains=token) |
-                                Q(itemserialnumber__serial_number__icontains=token)
+            filter_functions = [Q(item_make__icontains=token) |
+                                Q(item_model__icontains=token) |
+                                Q(item_description__icontains=token) |
+                                Q(item_group__icontains=token) |
+                                Q(item_notes__icontains=token) |
+                                Q(item_serial_number__icontains=token)
                                 for token in tokens]
         else:
             filter_functions = Q(item_id=None)
 
         if filter_functions:
-            records = Records.objects.all().order_by('-timestamp')
+            records = Record.objects.all().order_by('-timestamp')
             for filter_function in filter_functions:
-                qs = Records.objects.filter(filter_function).select_related("tester")
+                qs = Record.objects.filter(filter_function).select_related("tester")
                 records &= qs
         else:
-            records = Records.objects.none()
+            records = Record.objects.none()
 
-        tests = [list(x.tests_set.all()) for x in records]
+        tests = [list(x.pattest_set.all()) for x in records]
         data = dict()
         data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',
                                                     {'records': records})
@@ -101,8 +101,8 @@ def visual(request):
             timestamp = timezone.now()
             failed = form.cleaned_data['failed']
 
-            VisualTests(tester=tester, item=item, supervisor=supervisor,
-                        notes=notes, timestamp=timestamp, failed=failed).save()
+            VisualTest(tester=tester, item=item, supervisor=supervisor,
+                       notes=notes, timestamp=timestamp, failed=failed).save()
 
             new_form = VisualAddForm({'tester': tester, 'supervisor': supervisor},
                                      error_class=MuteErrorList,
@@ -129,8 +129,8 @@ def visual(request):
             timestamp = timezone.now()
             failed = form.cleaned_data['failed']
 
-            Repairs(repairer=repairer, item=item, supervisor=supervisor,
-                    notes=notes, timestamp=timestamp, failed=failed).save()
+            Repair(repairer=repairer, item=item, supervisor=supervisor,
+                   notes=notes, timestamp=timestamp, failed=failed).save()
 
             new_form = RepairAddForm({'repairer': repairer, 'supervisor': supervisor},
                                      error_class=MuteErrorList,
@@ -154,11 +154,11 @@ def get_visuals(request):
         search_query = request.GET.get("search_query")
 
         tokens = tokenise_search(search_query)
-        records = VisualTests.objects.all().order_by('-timestamp')
+        records = VisualTest.objects.all().order_by('-timestamp')
         if tokens:
             for token in tokens:
                 if search_type == "item_id":
-                    filter_function = Q(item_id=token)
+                    filter_function = Q(item__asset_id=token)
                 elif search_type == "tester_id":
                     filter_function = Q(tester__first_name__icontains=token) | \
                                       Q(tester__last_name__icontains=token)
@@ -171,12 +171,12 @@ def get_visuals(request):
                 else:
                     filter_function = Q(item_id=None)
 
-                visual_results = VisualTests.objects.filter(filter_function).select_related("tester", "supervisor")
+                visual_results = VisualTest.objects.filter(filter_function).select_related("tester", "supervisor")
                 # repair_results = Repairs.objects.filter(filter_function).select_related("repairer", "supervisor")
 
                 records &= visual_results  # + list(repair_results)
         else:
-            records = VisualTests.objects.none()
+            records = VisualTest.objects.none()
         data = {'records_rendered': render_to_string('bts_asset_db/partials/visual/partial_visual_records_body.html',
                                                      {'records': records})}
         return JsonResponse(data, safe=False)
@@ -186,7 +186,7 @@ def update_visual_note(request, vis_id):
     if request.user.is_authenticated and request.user.has_perm('bts_asset_db.change_visualtests'):
         if request.method == 'POST':
             new_note_value = request.POST.get('new_value')
-            v_test = VisualTests.objects.get(pk=vis_id)
+            v_test = VisualTest.objects.get(pk=vis_id)
             v_test.notes = new_note_value
             v_test.save()
             return HttpResponse(status=201)
@@ -238,5 +238,15 @@ def get_itemclasses(request):
                                        .prefetch_related("member_item_set") \
                                        .annotate(quantity=Count('member_item_set'))
         rendered = render_to_string('bts_asset_db/partials/asset/partial_itemclass_table.html', {'itemclasses': itemclasses})
+        data = {"rendered": rendered}
+        return JsonResponse(data, safe='False')
+
+
+def get_item(request, item_id):
+    if request.method == "GET":
+        item = Item.objects.filter(pk=item_id) \
+                           .prefetch_related("itemclass") \
+                           .prefetch_related('owner')
+        rendered = render_to_string('bts_asset_db/partials/asset/partial_item.html', {'items': item})
         data = {"rendered": rendered}
         return JsonResponse(data, safe='False')

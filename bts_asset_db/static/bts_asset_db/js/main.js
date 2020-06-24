@@ -47,6 +47,14 @@ $(function()
         get_tests(modal, record)
     })
 
+    $('#item_modal').on('show.bs.modal', function (event)
+    {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var item_id = button.data('id')
+        var modal = $(this)
+        populateItem(modal.find('.modal-body'), item_id)
+    })
+
     $('.list-group-container').on('click', '.list-group-item-bts', function(){
         chooseCollection($(this));
     });
@@ -171,7 +179,7 @@ function demoteCollection(elem)
     );
 }
 
-function fillWithCollections(parent_list, collections, name_of_collection)
+function fillWithCollections(parent_list, collections)
 {
     parent_list.empty();
 
@@ -180,7 +188,7 @@ function fillWithCollections(parent_list, collections, name_of_collection)
         let new_collection = document.createElement("li")
         new_collection.className = "list-group-item list-group-item-bts";
         new_collection.dataset.id = collection.pk;
-        new_collection.innerText = collection.fields[name_of_collection];
+        new_collection.innerText = collection.fields.name;
 
         parent_list.append(new_collection);
     }
@@ -197,21 +205,21 @@ async function populateDepartments()
 {
     const department_list = $('ul#department_list')
     const departments = await getJSResponseFromEndpoint('departments/', {});
-    fillWithCollections(department_list, departments, "department");
+    fillWithCollections(department_list, departments);
 }
 
 async function populateCategories(department_id)
 {
     const category_list = $('ul#category_list')
     const categories = await getJSResponseFromEndpoint('categories/', {department_id:department_id});
-    fillWithCollections(category_list, categories, "category");
+    fillWithCollections(category_list, categories);
 }
 
 async function populateSubcategories(category_id)
 {
     const subcategory_list = $('ul#subcategory_list')
     const subcategories = await getJSResponseFromEndpoint('subcategories/', {category_id:category_id});
-    fillWithCollections(subcategory_list, subcategories, "subcategory");
+    fillWithCollections(subcategory_list, subcategories);
 }
 
 async function populateItemclasses(subcategory_id)
@@ -309,6 +317,12 @@ function populateItemclass(render)
         $('div#item_container').html(render);
         showItemclasses();
     });
+}
+
+async function populateItem(container, item_id)
+{
+    const formatted_item = await getJSResponseFromEndpoint('items/' + item_id + '/', {});
+    container.html(formatted_item.rendered);
 }
 
 function update_notes(affected_span)

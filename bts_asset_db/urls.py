@@ -22,6 +22,8 @@ urlpatterns = [
     path('assets/itemclasses/', views.get_itemclasses, name='itemclasses'),
     # ex: assets/itemclasses/92/
     path('assets/itemclasses/<int:itemclass_id>/', views.itemclass_info, name='itemclass'),
+    # ex: assets/items/120/
+    path('assets/items/<int:item_id>/', views.get_item, name='item'),
     # ex: tests/
     path('tests/', views.get_tests, name='tests'),
     # ex: visual/

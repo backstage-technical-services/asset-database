@@ -13,11 +13,11 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ record.item_id }}</td>
-                <td>{{ record.itemmake }}</td>
-                <td>{{ record.itemmodel }}</td>
-                <td>{{ record.itemdescription }}</td>
-                <td>{{ record.itemnotes }}</td>
+                <td>{{ record.item.asset_id }}</td>
+                <td>{{ record.item_make }}</td>
+                <td>{{ record.item_model }}</td>
+                <td>{{ record.item_description }}</td>
+                <td>{{ record.item_notes }}</td>
             </tr>
             <tr>
                 {% for test in tests|index:forloop.counter0 %}

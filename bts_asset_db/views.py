@@ -245,8 +245,21 @@ def get_itemclasses(request):
 def get_item(request, item_id):
     if request.method == "GET":
         item = Item.objects.filter(pk=item_id) \
-                           .prefetch_related("itemclass") \
-                           .prefetch_related('owner')
+                           .select_related("itemclass", "owner") \
+                           .prefetch_related('record_set', 'record_set__pattest_set')
         rendered = render_to_string('bts_asset_db/partials/asset/partial_item.html', {'items': item})
         data = {"rendered": rendered}
         return JsonResponse(data, safe='False')
+
+
+def test_get_item(request, item_id):
+    if request.method == "GET":
+        item = Item.objects.filter(pk=item_id) \
+                           .select_related("itemclass", "owner") \
+                           .prefetch_related('record_set', 'record_set__pattest_set',
+                                             'children_set', 'children_set__record_set',
+                                             'children_set__record_set__pattest_set')
+        rendered = render_to_string('bts_asset_db/partials/asset/partial_item.html', {'items': item})
+        data = {"rendered": rendered}
+        return render(request, 'bts_asset_db/partials/asset/partial_item.html', {'items': item})
+

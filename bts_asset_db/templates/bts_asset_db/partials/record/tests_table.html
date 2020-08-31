@@ -20,22 +20,22 @@
                 <td>{{ record.item_notes }}</td>
             </tr>
             <tr>
-                {% for test in tests|index:forloop.counter0 %}
+                {% for test in record.pattest_set.all %}
                     <th>{{ test.test_type|testtranslate }}</th>
                 {% endfor %}
             </tr>
             <tr>
-                {% for test in tests|index:forloop.counter0 %}
+                {% for test in record.pattest_set.all %}
                     <td>{{ test.test_parameter_1|preftranslate:test.test_type|index:0 }}{{ test.test_parameter_1 }}</td>
                 {% endfor %}
             </tr>
             <tr>
-                {% for test in tests|index:forloop.counter0 %}
+                {% for test in record.pattest_set.all %}
                     <td>{{ test.test_parameter_2|preftranslate:test.test_type|index:1 }}{{ test.test_parameter_2 }}</td>
                 {% endfor %}
             </tr>
             <tr>
-                {% for test in tests|index:forloop.counter0 %}
+                {% for test in record.pattest_set.all %}
                     <td>{{ test.test_parameter_3|preftranslate:test.test_type|index:2 }}{{ test.test_parameter_3 }}</td>
                 {% endfor %}
             </tr>

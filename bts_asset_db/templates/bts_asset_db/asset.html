@@ -21,41 +21,59 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-        <ul class="list-group col-4" data-contains="departments">
-        {% for department in departments %}
-            <li class="list-group-item list-group-item-bts"
-                data-department="{{ department.id }}">{{ department.department }}</li>
-        {% endfor %}
-        </ul>
-        <ul class="list-group col-4" data-contains="categories">
-        {% for category in categories %}
-            <li class="list-group-item list-group-item-bts"
-                data-department="{{ category.department.id }}"
-                data-category="{{ category.id }}"
-                style="display:none">{{ category.category }}</li>
-        {% endfor %}
-        </ul>
-        <ul class="list-group col-4" data-contains="subcategories">
-        {% for subcategory in subcategories %}
-            <li class="list-group-item list-group-item-bts"
-                data-department="{{ subcategory.category.department.id }}"
-                data-category="{{ subcategory.category.id }}"
-                data-subcategory="{{ subcategory.id }}"
-                style="display:none">{{ subcategory.subcategory }}</li>
-        {% endfor %}
-        </ul>
+    <div class="row"
+         id="item_collections_select"
+         data-chosen-department="{{ chosen_department }}"
+         data-chosen-category="{{ chosen_category }}"
+         data-chosen-subcategory="{{ chosen_subcategory }}">
+
+        <ul class="list-group list-group-container col-4"
+            data-contains="departments"
+            id="department_list"
+            style="opacity:0; pointer-events:none"></ul>
+
+        <ul class="list-group list-group-container col-4"
+            data-contains="categories"
+            id="category_list"
+            style="opacity:0; pointer-events:none"></ul>
+
+        <ul class="list-group list-group-container col-4"
+            data-contains="subcategories"
+            id="subcategory_list"
+            style="opacity:0; pointer-events:none"></ul>
+
     </div>
-    <table class="table table-bts z-index-50 position-absolute"
-           style="top: 0; display: none"
-           id="item_classes_table">
-        <thead>
-            <tr>
-                <th>Item Class</th>
-                <th>Quantity</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div id="item_container"
+         class="z-index-50 position-absolute col-12"
+         style="opacity:0; pointer-events:none; top:0"></div>
+
+    <div class="modal fade"
+         id="item_modal"
+         tabindex="-1"
+         role="dialog"
+         aria-labelledby="itemModalDialogue"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl"
+             role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="item_modal_title">
+                    </h5>
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

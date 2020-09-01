@@ -15,3 +15,13 @@
       color: #fff;
   }
 }
+
+.table-fix-head {
+  overflow-y: auto;
+
+  thead tr {
+    position: sticky;
+    top: 0;
+    box-shadow: inset 0px 1px $btsyellow, 0px 1px $btsyellow;
+  }
+}

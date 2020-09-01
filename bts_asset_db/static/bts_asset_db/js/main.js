@@ -47,112 +47,282 @@ $(function()
         get_tests(modal, record)
     })
 
-    $('.list-group-item-bts').on('click', {elem: $(this)}, function(){
-        chooseCategory($(this));
+    $('#item_modal').on('show.bs.modal', function (event)
+    {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var item_id = button.data('id')
+        var modal = $(this)
+        populateItem(modal.find('.modal-body'), item_id)
+    })
+
+    $('.list-group-container').on('click', '.list-group-item-bts', function(){
+        chooseCollection($(this));
     });
+
+    $('#item_container').on('click', '.item-class-bts', function()
+    {
+        console.log("Itemclass clicked")
+        chooseItemclass($(this));
+    })
+
+    // $('#item_classes_table').on('click', '.item_class_bts', {elem: $(this)}, function(){
+    //     console.log("Itemclass clicked")
+    //     get_item_class_info($(this).data("itemclass"));
+    // })
+
+    if ($('body').data("page-section") === "asset_db" &&
+        $('body').data("page-id") === "search")
+    {
+        populateDepartments().then(showDepartments());
+    }
 });
 
-function demoteCategory({sibling_opacity, time})
+async function chooseCollection(elem)
 {
-    $(this).siblings().animate(
-        {
-            opacity: sibling_opacity
-        },
-        time,
-        function()
-        {
-            $(this).css("pointer-events", "");
-        }
-    );
+    const data_type = elem.parent().data('contains')
 
-    $(this).animate(
+    if (!elem.hasClass('chosen-collection'))
+    {
+        if (data_type === 'departments')
         {
-            "top": "0",
-            "background-color": "#222"
-        },
-        time,
-        function()
-        {
-            $(this).removeClass("chosen-category");
+            promoteCollection(elem)
+            await populateCategories(elem.data('id'))
+            showCategories()
         }
-    );
+        else if (data_type === 'categories')
+        {
+            promoteCollection(elem)
+            await populateSubcategories(elem.data('id'))
+            showSubcategories()
+        }
+        else if (data_type === 'subcategories')
+        {
+            promoteCollection(elem)
+            await populateItemclasses(elem.data('id'))
+            showItemclasses()
+        }
+        else
+        {
+            console.log("Cannot choose collection: invalid data_contains")
+        }
+    }
+    else
+    {
+        if (data_type === 'departments')
+        {
+            demoteCollection(elem)
+            hideCategories()
+        }
+        else if (data_type === 'categories')
+        {
+            demoteCollection(elem)
+            hideSubcategories()
+        }
+        else if (data_type === 'subcategories')
+        {
+            demoteCollection(elem)
+            hideItemclasses()
+        }
+        else
+        {
+            console.log("Cannot choose collection: invalid data_contains")
+        }
+    }
 }
 
-function promoteCategory({sibling_opacity, time})
+function promoteCollection(elem)
 {
-    const elemOffset = $(this).position().top + $(this).outerHeight();
-    $(this).siblings().animate(
-        {
-            opacity: sibling_opacity
-        },
-        time,
-        function()
-        {
-            $(this).css("pointer-events", "none");
-        }
-    );
+    // Get offset required to push collection to above top of list
+    const elemOffset = elem.position().top + elem.outerHeight();
 
-    $(this).animate(
+    // Fade out other collections over 500ms
+    // After this, ignore pointer events
+    // Asynchronous
+    hideElement(elem.siblings());
+
+    // Push collection to above top of list over 500ms and fade background to black
+    // Add chosen-collection class
+    // Asynchronous
+    elem.animate(
         {
             "top": "-=" + elemOffset,
             "background-color": "#000"
         },
-        time,
+        500,
         function()
         {
-            $(this).addClass("chosen-category");
+            elem.addClass("chosen-collection");
         }
-
     );
 }
 
-function chooseCategory(elem)
+function demoteCollection(elem)
 {
-    if (elem.hasClass("chosen-category"))
+    // Fade in other collections over 500ms
+    // After this, enable pointer events
+    // Asynchronous
+    showElement(elem.siblings())
+
+    // Push collection to above top of list over 500ms and fade background to black
+    // Add chosen-category class
+    // Asynchronous
+    elem.animate(
+        {
+            "top": 0,
+            "background-color": "#222"
+        },
+        500,
+        function()
+        {
+            elem.removeClass("chosen-collection");
+        }
+    );
+}
+
+function fillWithCollections(parent_list, collections)
+{
+    parent_list.empty();
+
+    for (const collection of collections)
     {
-        demoteCategory.call(elem, {sibling_opacity:1, time:500});
+        let new_collection = document.createElement("li")
+        new_collection.className = "list-group-item list-group-item-bts";
+        new_collection.dataset.id = collection.pk;
+        new_collection.innerText = collection.fields.name;
 
-        if (elem.parent().data("contains") === "departments")
-        {
-            const piblings = elem.parent().siblings();
-
-            piblings.children("li[data-department=" + elem.data("department") + "]")
-                .fadeOut();
-
-            piblings.children(".chosen-category")
-                .each(function(i) {demoteCategory.call($(this), {sibling_opacity:1, time:0})});
-        }
-        else if (elem.parent().data("contains") === "categories")
-        {
-            const piblings = elem.parent().siblings("ul[data-contains='subcategories']");
-
-            piblings.children("li[data-category=" + elem.data("category") + "][data-department=" + elem.data("department") + "]")
-                .fadeOut();
-
-            piblings.children(".chosen-category")
-                .each(function(i) {demoteCategory.call($(this), {sibling_opacity:1, time:0})});
-        }
-
-        $("#item_classes_table").fadeOut(500, function(){console.log("Complete!")});
+        parent_list.append(new_collection);
     }
-    else
+}
+
+async function getJSResponseFromEndpoint(endpoint, data)
+{
+    const params = jQuery.param(data);
+    let response = await fetch(endpoint+"?"+params);
+    return await response.json();
+}
+
+async function populateDepartments()
+{
+    const department_list = $('ul#department_list')
+    const departments = await getJSResponseFromEndpoint('departments/', {});
+    fillWithCollections(department_list, departments);
+}
+
+async function populateCategories(department_id)
+{
+    const category_list = $('ul#category_list')
+    const categories = await getJSResponseFromEndpoint('categories/', {department_id:department_id});
+    fillWithCollections(category_list, categories);
+}
+
+async function populateSubcategories(category_id)
+{
+    const subcategory_list = $('ul#subcategory_list')
+    const subcategories = await getJSResponseFromEndpoint('subcategories/', {category_id:category_id});
+    fillWithCollections(subcategory_list, subcategories);
+}
+
+async function populateItemclasses(subcategory_id)
+{
+    const itemclass_list = $('div#item_container');
+    const itemclasses = await getJSResponseFromEndpoint('itemclasses/', {subcategory_id:subcategory_id});
+    generateItemclassTable(itemclass_list, itemclasses);
+}
+
+function generateItemclassTable(itemclass_list, itemclasses)
+{
+    console.log(itemclasses)
+    itemclass_list.empty()
+    itemclass_list.html(itemclasses.rendered)
+}
+
+function showElement(elem)
+{
+    elem.animate(
+        {
+            opacity: 1
+        },
+        500,
+        function()
+        {
+            elem.css("pointer-events", "");
+        }
+    );
+}
+
+function hideElement(elem)
+{
+    elem.animate(
+        {
+            opacity: 0
+        },
+        500,
+        function()
+        {
+            elem.css("pointer-events", "none");
+        }
+    );
+}
+
+function showDepartments()
+{
+    showElement($('ul#department_list'));
+}
+
+function showCategories()
+{
+    showElement($('ul#category_list'));
+}
+
+function showSubcategories()
+{
+    showElement($('ul#subcategory_list'));
+}
+
+function showItemclasses()
+{
+    showElement($('div#item_container'));
+}
+
+function hideCategories()
+{
+    hideElement($('ul#category_list'));
+    hideSubcategories();
+}
+
+function hideSubcategories()
+{
+    hideElement($('ul#subcategory_list'));
+    hideItemclasses();
+}
+
+async function hideItemclasses()
+{
+    await hideElement($('div#item_container'));
+}
+
+async function chooseItemclass(elem)
+{
+    const itemclass_id = elem.data('id');
+    const formatted_itemclass = await getJSResponseFromEndpoint('itemclasses/' + itemclass_id + '/', {})
+    populateItemclass(formatted_itemclass.rendered);
+}
+
+function populateItemclass(render)
+{
+    hideItemclasses();
+
+    $('div#item_container').promise().done(function()
     {
-        promoteCategory.call(elem, {sibling_opacity:0, time:500})
+        $('div#item_container').html(render);
+        showItemclasses();
+    });
+}
 
-        elem.parent("ul[data-contains='departments']")
-            .siblings("ul[data-contains='categories']")
-            .children("li[data-department=" + elem.attr("data-department") + "]")
-            .fadeIn();
-        elem.parent("ul[data-contains='categories']")
-            .siblings("ul[data-contains='subcategories']")
-            .children("li[data-category=" + elem.attr("data-category") + "][data-department=" + elem.attr("data-department") + "]")
-            .fadeIn();
-
-        if (elem.parent().data("contains") === "subcategories")
-        {
-            get_item_classes(elem.data("subcategory"));
-        }
-    }
+async function populateItem(container, item_id)
+{
+    const formatted_item = await getJSResponseFromEndpoint('items/' + item_id + '/', {});
+    container.html(formatted_item.rendered);
 }
 
 function update_notes(affected_span)
@@ -195,23 +365,27 @@ function convert_input_to_text(object, new_class)
     return object;
 }
 
-function get_item_classes(subcategory)
+function get_item_class_info(itemclass)
 {
-    console.log("get_visual_records is working!");
+    console.log("get_item_class_info is working with itemclass:"+itemclass);
     $.ajax({
-        url : "itemclasses/",
+        url: "itemclasses/"+itemclass+"/",
         type: "GET",
         data:
             {
-                subcategory : subcategory
+                itemclass: itemclass
             },
 
-        success: function(json)
-        {
+        success: function (json) {
             console.log(json);
-            $("#item_classes_table tbody").html(json.item_classes_rendered);
-            console.log("success");
-            $("#item_classes_table").fadeIn(500, function(){console.log("Complete!")});
+            $("#item_classes_table_container").fadeOut(500, function() {
+                $("#item_classes_table_container").html(json.item_class_rendered);
+                console.log("success");
+            })
+
+            $("#item_classes_table_container").fadeIn(500, function () {
+                console.log("Complete!")
+            });
         }
     })
 }
@@ -284,6 +458,8 @@ function get_tests(modal, record_id)
     });
 }
 
+
+// XSRF protection below
 $(function()
 {
     // This function gets cookie with a given name

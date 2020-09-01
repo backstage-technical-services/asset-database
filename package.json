@@ -9,6 +9,6 @@
   },
   "scripts": {
     "release": "manage.py collectstatic --noinput && pip freeze > requirements.txt && git add . && git commit --message=\"[AUTO] Released new version\" && gcloud app deploy --quiet",
-    "postrelease": "for /F %i in ('git symbolic-ref --short HEAD') do git switch master && git merge %i"
+    "postrelease": "for /F %i in ('git symbolic-ref --short HEAD') do git switch master && git merge %i && git push && git switch %i"
   }
 }

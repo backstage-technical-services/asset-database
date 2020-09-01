@@ -12,8 +12,20 @@ urlpatterns = [
     path('records/', views.get_records, name='records'),
     # ex: assets/
     path('assets/', views.asset_search, name='assets'),
+    # ex: assets/departments/
+    path('assets/departments/', views.get_departments, name='departments'),
+    # ex: assets/categories/
+    path('assets/categories/', views.get_categories, name='categories'),
+    # ex: assets/categories/
+    path('assets/subcategories/', views.get_subcategories, name='subcategories'),
     # ex: assets/itemclasses/
-    path('assets/itemclasses/', views.itemclasses_search, name='itemclasses'),
+    path('assets/itemclasses/', views.get_itemclasses, name='itemclasses'),
+    # ex: assets/itemclasses/92/
+    path('assets/itemclasses/<int:itemclass_id>/', views.itemclass_info, name='itemclass'),
+    # ex: assets/items/120/
+    path('assets/items/<int:item_id>/', views.get_item, name='item'),
+    # ex: assets/items/test/120/
+    path('assets/items/test/<int:item_id>/', views.test_get_item, name='item_test'),
     # ex: tests/
     path('tests/', views.get_tests, name='tests'),
     # ex: visual/

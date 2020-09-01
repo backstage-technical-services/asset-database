@@ -1,10 +1,62 @@
-{% for itemclass in itemclasses %}
-    <tr>
-        <td>{{ itemclass.name }}</td>
-        <td>{{ itemclass.member_item_set.count }}</td>
-    </tr>
-{% empty %}
-    <tr>
-        <td colspan="2" class="text-center">No records</td>
-    </tr>
-{% endfor %}
+<div id="accordion">
+    {% for itemclass in itemclasses %}
+        <div class="card card-bts">
+            <div class="card-header"
+                 id="{{ itemclass.id }}_header">
+                <button class="btn btn-bts col-9 align-left"
+                        data-toggle="collapse"
+                        data-target="#collapse_{{ itemclass.id }}">
+                    <span class="float-left">{{ itemclass.name }}</span>
+                </button>
+                <span class="col-3">x{{ itemclass.quantity }}</span>
+            </div>
+            <div class="collapse"
+                 id="collapse_{{ itemclass.id }}"
+                 data-parent="#accordion">
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Quantity:</dt>
+                        <dd class="col-sm-3">{{ itemclass.quantity }}</dd>
+
+                        <dt class="col-sm-3">In Service:</dt>
+                        <dd class="col-sm-3">{{ itemclass.quantity }}</dd>
+
+                        <dt class="col-sm-2">Description:</dt>
+                        <dd class="col-sm-4">{{ itemclass.description }}</dd>
+                    </dl>
+                    <div class="table-fix-head"
+                         style="height:300px">
+                        <table class="table table-bts"
+                               id="{{ itemclass.id }}_table">
+                            <thead>
+                                <tr style="background-color:#222">
+                                    <th>Item ID</th>
+                                    <th>In Service?</th>
+                                    <th>Stored</th>
+{#                                  <th>Owner</th>#}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itemclass.member_item_set.all %}
+                                    <tr>
+                                        <td>
+                                            <a class="btn btn-info"
+                                               data-toggle="modal"
+                                               data-target="#item_modal"
+                                               data-id="{{ item.id }}">
+                                                <span>{{ item.asset_id }}</span>
+                                            </a>
+                                        </td>
+                                        <td>Not Implemented</td>
+                                        <td>{{ item.storage }}</td>
+        {#                              <td>{{ item.owner.name }}</td>#}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

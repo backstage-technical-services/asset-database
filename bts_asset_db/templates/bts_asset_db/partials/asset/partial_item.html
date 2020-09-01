@@ -1,0 +1,68 @@
+{% extends 'bts_asset_db/base.html' %}
+
+{% block content %}
+{% for item in items %}
+    <div>
+        <h3 class="text-center">{{ item.itemclass.name }} - {{ item.asset_id }}</h3>
+    </div>
+    <div class="row">
+        <div class="col-2">Serial Number:</div>
+        <div class="col-4">{{ item.serial_number }}</div>
+        <div class="col-2">Owner:</div>
+        <div class="col-4">{{ item.owner.name }}</div>
+    </div>
+    <div class="row">
+        <div class="col-2">Associations:</div>
+        <div class="col-4">Not Implemented</div>
+        {% if item.is_location %}
+            <div class="col-6">Item is a location</div>
+        {% else %}
+            <div class="col-2">Storage:</div>
+            <div class="col-4">{{ item.storage }}</div>
+        {% endif %}
+    </div>
+    <div id="accordion2">
+        <div class="card card-bts">
+            <div class="card-header"
+                 id="{{ item.id }}_record_header">
+                <button class="btn btn-bts align-left"
+                        data-toggle="collapse"
+                        data-target="#collapse_{{ item.id }}">
+                    <span class="float-left">{{ item.asset_id }}</span>
+                </button>
+            </div>
+            <div class="collapse"
+                 id="collapse_{{ item.id }}"
+                 data-parent="#accordion2">
+                <div class="card-body">
+                    {% with records=item.record_set.all %}
+                        {% include "bts_asset_db/partials/record/tests_table.html" %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        {% for child in item.children_set.all %}
+            <div class="card card-bts">
+                <div class="card-header"
+                     id="{{ child.id }}_record_header">
+                    <button class="btn btn-bts align-left"
+                            data-toggle="collapse"
+                            data-target="#collapse_{{ child.id }}">
+                        <span class="float-left">{{ child.asset_id }}</span>
+                    </button>
+                </div>
+                <div class="collapse"
+                     id="collapse_{{ child.id }}"
+                     data-parent="#accordion2">
+                    <div class="card-body">
+                        {% with records=child.record_set.all %}
+                            {% include "bts_asset_db/partials/record/tests_table.html" %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endfor %}
+{% endblock %}

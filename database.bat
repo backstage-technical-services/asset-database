@@ -1,1 +1,1 @@
-cloud_sql_proxy -instances=bts-pat-website:us-east1:bts-pat-sql=tcp:3306
+cloud_sql_proxy -instances=bts-pat-website:us-east1:bts-pat-sql=tcp:3307

@@ -128,10 +128,12 @@ class PatTest(models.Model):
 
 
 class VisualTest(models.Model):
-    tester = models.ForeignKey('Tester', on_delete=models.PROTECT, related_name="visual_test_set")
+    tester = models.ForeignKey('Tester', on_delete=models.PROTECT, related_name="visual_test_set",
+                               limit_choices_to={'archived': False})
     timestamp = models.DateTimeField()
     item = models.ForeignKey('Item', on_delete=models.PROTECT)
-    supervisor = models.ForeignKey('Tester', on_delete=models.PROTECT, limit_choices_to={'vis_level': 3},
+    supervisor = models.ForeignKey('Tester', on_delete=models.PROTECT, limit_choices_to={'vis_level': 3,
+                                                                                         'archived': False},
                                    related_name="visual_supervision_set", blank=True, null=True)
     notes = models.CharField(max_length=100, null=True, blank=True)
     failed = models.BooleanField()
@@ -141,10 +143,12 @@ class VisualTest(models.Model):
 
 
 class Repair(models.Model):
-    repairer = models.ForeignKey('Tester', on_delete=models.PROTECT, related_name="repair_set")
+    repairer = models.ForeignKey('Tester', on_delete=models.PROTECT, related_name="repair_set",
+                                 limit_choices_to={'archived': False})
     timestamp = models.DateTimeField()
     item = models.ForeignKey('Item', on_delete=models.PROTECT)
     supervisor = models.ForeignKey('Tester', on_delete=models.PROTECT, blank=True, null=True,
+                                   limit_choices_to={'vis_level': 3, 'archived': False},
                                    related_name="repair_supervision_set")
     notes = models.CharField(max_length=100, null=True, blank=True)
     failed = models.BooleanField()

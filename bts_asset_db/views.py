@@ -1,12 +1,9 @@
-import json
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.core import serializers
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db import connection, connections
-from django.db.models import Q, F, Count
+from django.db.models import Q, Count
 from .forms import *
 from .models import *
 
@@ -72,7 +69,7 @@ def get_records(request):
         data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',
                                                     {'records': records})
         data['tests_rendered'] = render_to_string('bts_asset_db/partials/record/tests_table.html',
-                                                   {'records': records, 'tests': tests})
+                                                  {'records': records, 'tests': tests})
         return JsonResponse(data, safe=False)
 
     else:
@@ -95,11 +92,19 @@ def visual(request):
         if form.is_valid():
             # process the data in form.cleaned_data as required
             tester = form.cleaned_data['tester']
-            item = form.cleaned_data['item']
+            item = Item.objects.get(asset_id=form.cleaned_data['item'])
+            print(form.cleaned_data['item'])
             supervisor = form.cleaned_data['supervisor']
             notes = form.cleaned_data['notes']
             timestamp = timezone.now()
             failed = form.cleaned_data['failed']
+            minor_repair = form.cleaned_data['log_minor_repair']
+
+            if minor_repair:
+                VisualTest(tester=tester, item=item, supervisor=supervisor,
+                           notes=notes, timestamp=timestamp, failed=True).save()
+                Repair(repairer=tester, item=item, supervisor=supervisor,
+                       notes=notes, timestamp=timestamp, failed=failed).save()
 
             VisualTest(tester=tester, item=item, supervisor=supervisor,
                        notes=notes, timestamp=timestamp, failed=failed).save()
@@ -128,6 +133,11 @@ def visual(request):
             notes = form.cleaned_data['notes']
             timestamp = timezone.now()
             failed = form.cleaned_data['failed']
+            failed_visual = form.cleaned_data['log_visual_fail']
+
+            if failed_visual:
+                VisualTest(tester=repairer, item=item, supervisor=supervisor,
+                           notes=notes, timestamp=timestamp, failed=True).save()
 
             Repair(repairer=repairer, item=item, supervisor=supervisor,
                    notes=notes, timestamp=timestamp, failed=failed).save()
@@ -237,7 +247,8 @@ def get_itemclasses(request):
         itemclasses = ItemClass.objects.filter(subcategory_id=subcategory_id) \
                                        .prefetch_related("member_item_set") \
                                        .annotate(quantity=Count('member_item_set'))
-        rendered = render_to_string('bts_asset_db/partials/asset/partial_itemclass_table.html', {'itemclasses': itemclasses})
+        rendered = render_to_string('bts_asset_db/partials/asset/partial_itemclass_table.html',
+                                    {'itemclasses': itemclasses})
         data = {"rendered": rendered}
         return JsonResponse(data, safe='False')
 
@@ -259,7 +270,6 @@ def test_get_item(request, item_id):
                            .prefetch_related('record_set', 'record_set__pattest_set',
                                              'children_set', 'children_set__record_set',
                                              'children_set__record_set__pattest_set')
-        rendered = render_to_string('bts_asset_db/partials/asset/partial_item.html', {'items': item})
-        data = {"rendered": rendered}
+        # rendered = render_to_string('bts_asset_db/partials/asset/partial_item.html', {'items': item})
+        # data = {"rendered": rendered}
         return render(request, 'bts_asset_db/partials/asset/partial_item.html', {'items': item})
-

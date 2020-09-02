@@ -34,7 +34,6 @@ class VisualAddForm(ModelForm):
 
     def clean_item(self):
         data = self.cleaned_data['item']
-        print(data)
 
         try:
             result = Item.objects.get(asset_id=data)

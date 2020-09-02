@@ -78,6 +78,7 @@ class Tester(models.Model):
     vis_level = models.IntegerField(validators=[validators.MaxValueValidator(3), validators.MinValueValidator(1)])
     machine_name = models.CharField(max_length=10, blank=True, null=True, unique=True)
     alt_machine_name = models.CharField(max_length=10, blank=True, null=True, unique=True)
+    archived = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -143,7 +144,8 @@ class Repair(models.Model):
     repairer = models.ForeignKey('Tester', on_delete=models.PROTECT, related_name="repair_set")
     timestamp = models.DateTimeField()
     item = models.ForeignKey('Item', on_delete=models.PROTECT)
-    supervisor = models.ForeignKey('Tester', on_delete=models.PROTECT, related_name="repair_supervision_set")
+    supervisor = models.ForeignKey('Tester', on_delete=models.PROTECT, blank=True, null=True,
+                                   related_name="repair_supervision_set")
     notes = models.CharField(max_length=100, null=True, blank=True)
     failed = models.BooleanField()
 

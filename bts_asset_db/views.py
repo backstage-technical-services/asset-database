@@ -108,7 +108,10 @@ def visual(request):
                                      error_class=MuteErrorList,
                                      auto_id="v_%s")
 
-            message_text = f"Successfully added item {item}"
+            message_text = f"Successfully added visual record for item {item}"
+            if not item.processed:
+                message_text = message_text + " and created new item in database"
+
             context['visual_submit_form'] = new_form
             context['msg_general'] = message_text
         else:
@@ -136,7 +139,10 @@ def visual(request):
                                      error_class=MuteErrorList,
                                      auto_id="r_%s")
 
-            message_text = f"Successfully added item {item}"
+            message_text = f"Successfully added repair record for item {item}"
+            if not item.processed:
+                message_text = message_text + " and created new item in database"
+
             context['repair_submit_form'] = new_form
             context['msg_general'] = message_text
         else:

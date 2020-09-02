@@ -35,11 +35,8 @@ class VisualAddForm(ModelForm):
         try:
             result = Item.objects.get(asset_id=data)
         except ObjectDoesNotExist:
-            raise ValidationError(
-                'Invalid item: %(item)s',
-                code='invalid',
-                params={'item': data}
-            )
+            result = Item(asset_id=data)
+            result.save()
 
         return result
 
@@ -60,11 +57,8 @@ class RepairAddForm(ModelForm):
         try:
             result = Item.objects.get(asset_id=data)
         except ObjectDoesNotExist:
-            raise ValidationError(
-                'Invalid item: %(item)s',
-                code='invalid',
-                params={'item': data}
-            )
+            result = Item(asset_id=data)
+            result.save()
 
         return result
 

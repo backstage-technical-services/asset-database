@@ -50,12 +50,13 @@ class VisualAddForm(ModelForm):
 
 class RepairAddForm(ModelForm):
     log_visual_fail = BooleanField(widget=CheckboxInput(attrs={'class': 'custom-control-input'}))
+    item = CharField(max_length=20,
+                     widget=TextInput(attrs={'class': 'form-control'}))
 
     class Meta:
         model = Repair
         fields = ['repairer', 'item', 'supervisor', 'notes', 'failed']
         widgets = {'repairer': Select(attrs={'class': 'custom-select'}),
-                   'item': TextInput(attrs={'class': 'form-control'}),
                    'supervisor': Select(attrs={'class': 'custom-select'}),
                    'notes': TextInput(attrs={'class': 'form-control'}),
                    'failed': CheckboxInput(attrs={'class': 'custom-control-input'})}

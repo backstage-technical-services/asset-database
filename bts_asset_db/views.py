@@ -92,8 +92,7 @@ def visual(request):
         if form.is_valid():
             # process the data in form.cleaned_data as required
             tester = form.cleaned_data['tester']
-            item = Item.objects.get(asset_id=form.cleaned_data['item'])
-            print(form.cleaned_data['item'])
+            item = form.cleaned_data['item']
             supervisor = form.cleaned_data['supervisor']
             notes = form.cleaned_data['notes']
             timestamp = timezone.now()

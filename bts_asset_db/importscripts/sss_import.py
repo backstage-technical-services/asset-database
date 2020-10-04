@@ -59,7 +59,7 @@ def get_records(file_contents, record_header):
 
 
 def parse_record(payload):
-    record = Records()
+    record = Record()
     tests = TESTS_VERSION_1.copy()
     version = 1
 
@@ -92,7 +92,7 @@ def parse_record(payload):
 
 
 def export_record(record, data, test_type):
-    test = Tests(test_type=test_type)
+    test = PatTest(test_type=test_type)
     entities_to_create = []
 
     if test_type in (0x01, 0x02, 0x11, 0x12):
@@ -107,13 +107,8 @@ def export_record(record, data, test_type):
                                              data['day'],
                                              data['hour'],
                                              data['minute'])
-        try:
-            record.item = Item.objects.get(id=data['id'])
-        except ObjectDoesNotExist:
-            new_item = Item(id=data['id'])
-            new_item.save()
 
-            record.item = Item.objects.get(id=data['id'])
+        record.item, _ = Item.objects.get_or_create(id=data['id'])
 
     elif test_type == 0xe0:
         # User Data Input Order
@@ -137,17 +132,23 @@ def export_record(record, data, test_type):
     elif test_type == 0xfb:
         # These are the user data fields. Assume we already have info about the data order.
         user_data = list(data.values())
-        mappings = {0: ItemNotes,
-                    1: ItemDescription,
-                    2: ItemGroup,
-                    3: ItemMake,
-                    4: ItemModel,
-                    5: ItemSerialNumber}
+        mappings = {0: "item_notes",
+                    1: "item_description",
+                    2: "item_group",
+                    3: "item_make",
+                    4: "item_model",
+                    5: "item_serial_number"}
 
-        for idx, mapping in enumerate(record.user_data_input_order):
-            if user_data[idx]:
-                new_entity = mappings[mapping](None, user_data[idx])
-                entities_to_create.append(new_entity)
+        # Deals with the fact multiple user_data entries may be of the same type.
+        # If this happens, separate with /n.
+
+        for mapping, fieldname in mappings.items():
+            contents = [data
+                        for ind, data in enumerate(user_data)
+                        if record.user_data_input_order[ind] == mapping]
+            if contents:
+                combined_data = "\n".join(contents)
+                setattr(record, fieldname, combined_data)
 
     elif test_type == 0xfe:
         # Tester serial number and firmware

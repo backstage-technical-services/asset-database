@@ -77,6 +77,7 @@
 import struct
 import collections
 
+
 # Not-invented-here Structured Database Helper class
 class Sdb():
     """Structured database class, not related to 'SSS' specifically.  It is

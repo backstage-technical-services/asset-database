@@ -96,12 +96,12 @@ class Record(models.Model):
     machine_firmware_version = models.CharField(max_length=6)
     retest_freq_months = models.IntegerField()
     user_data_input_order = models.CharField(max_length=12)
-    item_make = models.CharField(max_length=20, blank=True, null=True)
-    item_model = models.CharField(max_length=20, blank=True, null=True)
-    item_description = models.CharField(max_length=20, blank=True, null=True)
-    item_notes = models.CharField(max_length=20, blank=True, null=True)
-    item_group = models.CharField(max_length=20, blank=True, null=True)
-    item_serial_number = models.CharField(max_length=20, blank=True, null=True)
+    item_make = models.CharField(max_length=83, blank=True, null=True)
+    item_model = models.CharField(max_length=83, blank=True, null=True)
+    item_description = models.CharField(max_length=83, blank=True, null=True)
+    item_notes = models.CharField(max_length=83, blank=True, null=True)
+    item_group = models.CharField(max_length=83, blank=True, null=True)
+    item_serial_number = models.CharField(max_length=83, blank=True, null=True)
 
     def __str__(self):
         return f'Record {self.id}, Item {self.item.asset_id}'

@@ -3,8 +3,7 @@ import datetime
 from io import BytesIO
 from .sss_base import *
 from bts_asset_db.models import *
-
-from django.core.exceptions import ObjectDoesNotExist
+from django.utils.timezone import make_aware
 from django.db.models import Q
 
 
@@ -19,6 +18,19 @@ def sss_import(uploaded_files):
             except SSSSyntaxError as message:
                 print('End File {Error:"%s"}' % message)
                 continue
+
+    update_machine_latest_record_times()
+
+
+def update_machine_latest_record_times():
+    for machine in TestingMachine.objects.all():
+        try:
+            timestamp = Record.objects.filter(machine_serial_no=machine).latest('timestamp', 'id').timestamp
+        except ObjectDoesNotExist as e:
+            timestamp = make_aware(datetime.datetime(1970, 1, 1, 0, 0))
+
+        machine.last_imported_record_time = timestamp
+        machine.save()
 
 
 def read_sss(file_contents):
@@ -85,10 +97,13 @@ def parse_record(payload):
         # Seek past to start of next sub-field
         payload = payload[len(current_test):]
 
-    record.save()
-    for entry in entries_to_create:
-        entry.record = record
-        entry.save()
+    if record.timestamp > record.machine_serial_no.last_imported_record_time:
+        if not record.retest_freq_months:
+            record.retest_freq_months = 12
+        record.save()
+        for entry in entries_to_create:
+            entry.record = record
+            entry.save()
 
 
 def export_record(record, data, test_type):
@@ -102,13 +117,13 @@ def export_record(record, data, test_type):
         record.site = data['site']
         record.location = data['location']
         record.tester = Tester.objects.get(Q(machine_name=data['tester']) | Q(alt_machine_name=data['tester']))
-        record.timestamp = datetime.datetime(data['year'],
+        record.timestamp = make_aware(datetime.datetime(data['year'],
                                              data['month'],
                                              data['day'],
                                              data['hour'],
-                                             data['minute'])
+                                             data['minute']))
 
-        record.item, _ = Item.objects.get_or_create(id=data['id'])
+        record.item, _ = Item.objects.get_or_create(asset_id=data['id'])
 
     elif test_type == 0xe0:
         # User Data Input Order
@@ -152,8 +167,8 @@ def export_record(record, data, test_type):
 
     elif test_type == 0xfe:
         # Tester serial number and firmware
-        record.serial_no = data['serialnumber']
-        record.firmware_version = '%d.%d.%d' % (data['firmware1'], data['firmware2'], data['firmware3'])
+        record.machine_serial_no_id = data['serialnumber']
+        record.machine_firmware_version = '%d.%d.%d' % (data['firmware1'], data['firmware2'], data['firmware3'])
 
     else:
         # Unknown

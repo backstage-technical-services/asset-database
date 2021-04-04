@@ -92,7 +92,8 @@ class Record(models.Model):
     tester = models.ForeignKey('Tester', on_delete=models.PROTECT)
     testcode_1 = models.CharField(max_length=10)
     testcode_2 = models.CharField(max_length=10)
-    machine_serial_no = models.CharField(max_length=8)
+    machine_serial_no = models.ForeignKey('TestingMachine', to_field="serial_number",
+                                          db_column="machine_serial_no", on_delete=models.PROTECT)
     machine_firmware_version = models.CharField(max_length=6)
     retest_freq_months = models.IntegerField()
     user_data_input_order = models.CharField(max_length=12)
@@ -155,3 +156,11 @@ class Repair(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class TestingMachine(models.Model):
+    serial_number = models.CharField(max_length=10, unique=True)
+    last_imported_record_time = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return str(self.serial_number) + ": " + str(self.last_imported_record_time)

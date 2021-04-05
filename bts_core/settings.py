@@ -11,12 +11,6 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from google.cloud import secretmanager
-project_id = "507813517891"
-db_user_id = "database-username"
-db_pass_id = "database-password"
-secret_key_id = "secret-key"
-secret_version = "latest"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -91,66 +85,28 @@ WSGI_APPLICATION = 'bts_core.wsgi.application'
 
 DATABASE_ROUTERS = ['bts_core.dbrouters.AssetDbRouter']
 
-if os.getenv('GAE_APPLICATION', None):
-    client = secretmanager.SecretManagerServiceClient()
+SECRET_KEY = os.environ['BTS_ASSET_DB_SECRET_KEY']
 
-    db_user_path = client.secret_version_path(project_id, db_user_id, secret_version)
-    db_pass_path = client.secret_version_path(project_id, db_pass_id, secret_version)
-    secret_key_path = client.secret_version_path(project_id, secret_key_id, secret_version)
+DEBUG = True
 
-    paths = (db_user_path, db_pass_path, secret_key_path)
-    responses = [client.access_secret_version(path).payload.data.decode('UTF-8') for path in paths]
-    [db_user, db_pass, secret_key] = responses
-
-    # SECURITY WARNING: keep the secret key used in production secret!
-    SECRET_KEY = secret_key
-
-    DEBUG = False
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'bts_core',
-            'USER': db_user,
-            'PASSWORD': db_pass,
-            'HOST': '/cloudsql/bts-pat-website:us-east1:bts-pat-sql',
-        },
-        'pat': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'bts_asset_db_pat',
-            'USER': db_user,
-            'PASSWORD': db_pass,
-            'HOST': '/cloudsql/bts-pat-website:us-east1:bts-pat-sql',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'bts_core',
+        'USER': os.environ['BTS_ASSET_DB_DBUSER'],
+        'PASSWORD': os.environ['BTS_ASSET_DB_DBPASS'],
+        'HOST': '127.0.0.1',
+        'PORT': '3306'
+    },
+    'pat': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'bts_asset_db_pat',
+        'USER': os.environ['BTS_ASSET_DB_DBUSER'],
+        'PASSWORD': os.environ['BTS_ASSET_DB_DBPASS'],
+        'HOST': '127.0.0.1',
+        'PORT': '3306'
     }
-else:
-    # Running locally so connect to either a local MySQL instance or connect to
-    # Cloud SQL via the proxy. To start the proxy via command line:
-    #
-    #     $ cloud_sql_proxy -instances=bts-pat-website:us-east1:bts-pat-sql=tcp:3306
-
-    SECRET_KEY = os.environ['BTS_ASSET_DB_SECRET_KEY']
-
-    DEBUG = True
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'bts_core',
-            'USER': os.environ['BTS_ASSET_DB_DBUSER'],
-            'PASSWORD': os.environ['BTS_ASSET_DB_DBPASS'],
-            'HOST': '127.0.0.1',
-            'PORT': '3306'
-        },
-        'pat': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'bts_asset_db_pat',
-            'USER': os.environ['BTS_ASSET_DB_DBUSER'],
-            'PASSWORD': os.environ['BTS_ASSET_DB_DBPASS'],
-            'HOST': '127.0.0.1',
-            'PORT': '3306'
-        }
-    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

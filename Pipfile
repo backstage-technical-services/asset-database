@@ -8,8 +8,11 @@ Django = "*"
 django-rest-framework = "*"
 django-debug-toolbar = "*"
 mysqlclient = "*"
+keyring = "*"
+secretstorage = "*"
+python-dotenv = ">0.8"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.8.6"

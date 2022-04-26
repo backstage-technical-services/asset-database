@@ -37,7 +37,7 @@ class ItemClass(models.Model):
     subcategory = models.ForeignKey('Subcategory', on_delete=models.PROTECT)
 
     def __str__(self):
-        return f"{self.subcategory.name} > {self.name}"
+        return f"{self.name}"  # f"{self.subcategory.name} > {self.name}"
 
 
 class Subcategory(models.Model):
@@ -45,7 +45,7 @@ class Subcategory(models.Model):
     category = models.ForeignKey('Category', on_delete=models.PROTECT)
 
     def __str__(self):
-        return f"{self.category.department.name} > {self.category.name} > {self.name}"
+        return f"{self.name}"  # f"{self.category.department.name} > {self.category.name} > {self.name}"
 
 
 class Category(models.Model):

@@ -1,6 +1,6 @@
 {% block menu %}
     <nav class="navbar navbar-expand-sm navbar-dark">
-        <div class="collapse navbar-collapse">
+        <div>
             <ul class="navbar-nav">
                 {% block nav_location %}
                     {% if page_id == "record" %}
@@ -31,7 +31,7 @@
             {% include "bts_asset_db/partials/base/auth_link.html" %}
         </div>
 
-        <div class="col-9 col-md-3" id="search">
+        <div class="col-9 col-md-3 collapse navbar-collapse" id="search">
             <form class="form-inline">
                 <div class="input-group">
                     {{ navbar_search.navbar_search }}

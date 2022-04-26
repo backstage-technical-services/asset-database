@@ -4,7 +4,7 @@ from .models import *
 
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('asset_id', 'itemclass', 'owner', 'is_channel', 'is_multichannel')
-    list_filter = ('itemclass', 'owner', 'is_channel', 'is_multichannel')
+    list_filter = ('owner', 'is_channel', 'is_multichannel')
     list_editable = ('itemclass', 'owner', 'is_channel', 'is_multichannel')
 
 

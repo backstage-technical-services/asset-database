@@ -97,7 +97,7 @@ def visual(request):
             notes = form.cleaned_data['notes']
             timestamp = timezone.now()
             failed = form.cleaned_data['failed']
-            minor_repair = form.cleaned_data['log_minor_repair']
+            minor_repair = form.cleaned_data['minor_repair_undertaken']
 
             if minor_repair:
                 VisualTest(tester=tester, item=item, supervisor=supervisor,
@@ -134,15 +134,9 @@ def visual(request):
             supervisor = form.cleaned_data['supervisor']
             notes = form.cleaned_data['notes']
             timestamp = timezone.now()
-            failed = form.cleaned_data['failed']
-            failed_visual = form.cleaned_data['log_visual_fail']
-
-            if failed_visual:
-                VisualTest(tester=repairer, item=item, supervisor=supervisor,
-                           notes=notes, timestamp=timestamp, failed=True).save()
 
             Repair(repairer=repairer, item=item, supervisor=supervisor,
-                   notes=notes, timestamp=timestamp, failed=failed).save()
+                   notes=notes, timestamp=timestamp).save()
 
             new_form = RepairAddForm({'repairer': repairer, 'supervisor': supervisor},
                                      error_class=MuteErrorList,

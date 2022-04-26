@@ -75,10 +75,10 @@
 
                         <div class="form-row form-group">
                             <div class="custom-control custom-checkbox col-12">
-                                {{ visual_submit_form.log_minor_repair }}
-                                <label for="v_log_minor_repair"
+                                {{ visual_submit_form.minor_repair_undertaken }}
+                                <label for="v_minor_repair_undertaken"
                                        class="custom-control-label">
-                                    {{ visual_submit_form.log_minor_repair.label }} (please give note):
+                                    {{ visual_submit_form.minor_repair_undertaken.label }} (please give note):
                                 </label>
                             </div>
                         </div>
@@ -124,26 +124,6 @@
                                 {{ repair_submit_form.notes.label }}:
                             </label>
                             <div class="col-12 col-md-7 col-lg-8 col-xl-9">{{ repair_submit_form.notes }}</div>
-                        </div>
-
-                        <div class="form-row form-group">
-                            <div class="custom-control custom-checkbox col-12">
-                                {{ repair_submit_form.failed }}
-                                <label for="r_failed"
-                                       class="custom-control-label">
-                                    {{ repair_submit_form.failed.label }}:
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-row form-group">
-                            <div class="custom-control custom-checkbox col-12">
-                                {{ repair_submit_form.log_visual_fail }}
-                                <label for="r_log_visual_fail"
-                                       class="custom-control-label">
-                                    {{ repair_submit_form.log_visual_fail.label }} (please give note):
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </fieldset>

@@ -20,8 +20,8 @@ class ItemForm(Form):
 
 
 class VisualAddForm(ModelForm):
-    log_minor_repair = BooleanField(widget=CheckboxInput(attrs={'class': 'custom-control-input'}),
-                                    required=False)
+    minor_repair_undertaken = BooleanField(widget=CheckboxInput(attrs={'class': 'custom-control-input'}),
+                                           required=False)
     item = CharField(max_length=20,
                      widget=TextInput(attrs={'class': 'form-control'}))
 
@@ -46,8 +46,6 @@ class VisualAddForm(ModelForm):
 
 
 class RepairAddForm(ModelForm):
-    log_visual_fail = BooleanField(widget=CheckboxInput(attrs={'class': 'custom-control-input'}),
-                                   required=False)
     item = CharField(max_length=20,
                      widget=TextInput(attrs={'class': 'form-control'}))
 
@@ -56,8 +54,7 @@ class RepairAddForm(ModelForm):
         fields = ['repairer', 'item', 'supervisor', 'notes', 'failed']
         widgets = {'repairer': Select(attrs={'class': 'custom-select'}),
                    'supervisor': Select(attrs={'class': 'custom-select'}),
-                   'notes': TextInput(attrs={'class': 'form-control'}),
-                   'failed': CheckboxInput(attrs={'class': 'custom-control-input'})}
+                   'notes': TextInput(attrs={'class': 'form-control'})}
 
     def clean_item(self):
         data = self.cleaned_data['item']

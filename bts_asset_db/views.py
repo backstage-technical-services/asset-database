@@ -6,6 +6,7 @@ from django.core import serializers
 from django.db.models import Q, Count
 from .forms import *
 from .models import *
+from itertools import chain
 
 
 def tokenise_search(search_query):
@@ -191,7 +192,9 @@ def get_visuals(request):
             visual_records = VisualTest.objects.none()
             repair_records = Repair.objects.none()
 
-        records = list(visual_records) + list(repair_records)
+        records = sorted(chain(visual_records, repair_records), key=lambda record: record.timestamp, reverse=True)
+
+
         data = {'records_rendered': render_to_string('bts_asset_db/partials/visual/partial_visual_records_body.html',
                                                      {'records': records})}
         return JsonResponse(data, safe=False)

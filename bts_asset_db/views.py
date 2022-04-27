@@ -163,7 +163,9 @@ def get_visuals(request):
         search_query = request.GET.get("search_query")
 
         tokens = tokenise_search(search_query)
-        records = VisualTest.objects.all().order_by('-timestamp')
+        visual_records = VisualTest.objects.all().order_by('-timestamp')
+        repair_records = Repair.objects.all().order_by('-timestamp')
+
         if tokens:
             for token in tokens:
                 if search_type == "item_id":
@@ -181,11 +183,15 @@ def get_visuals(request):
                     filter_function = Q(item_id=None)
 
                 visual_results = VisualTest.objects.filter(filter_function).select_related("tester", "supervisor")
-                # repair_results = Repairs.objects.filter(filter_function).select_related("repairer", "supervisor")
+                repair_results = Repair.objects.filter(filter_function).select_related("repairer", "supervisor")
 
-                records &= visual_results  # + list(repair_results)
+                visual_records &= visual_results
+                repair_records &= repair_results
         else:
-            records = VisualTest.objects.none()
+            visual_records = VisualTest.objects.none()
+            repair_records = Repair.objects.none()
+
+        records = list(visual_records) + list(repair_records)
         data = {'records_rendered': render_to_string('bts_asset_db/partials/visual/partial_visual_records_body.html',
                                                      {'records': records})}
         return JsonResponse(data, safe=False)

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "asset-database.fullname" . }}
+  labels:
+    {{- include "asset-database.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "asset-database.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      name: {{ include "asset-database.fullname" . }}
+      labels:
+        {{- include "asset-database.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: app
+          image: 'ghcr.io/backstage-technical-services/asset-database:{{ .Values.image.tag }}'
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: {{ include "asset-database.fullname" . }}
+          env:
+            - name: DB_HOST
+              value: mariadb-10-4
+            - name: DB_PORT
+              value: '3306'
+            - name: DB_NAME
+              value: asset_database_{{ .Values.environment }}
+            - name: SMTP_HOST
+              value: {{ .Values.smtp.host }}
+            - name: SMTP_PORT
+              value: '{{ .Values.smtp.port }}'
+            - name: SMTP_ENCRYPTION
+              value: {{ .Values.smtp.encryption }}
+      nodeSelector:
+        bnjns.uk/owner: backstage
+      tolerations:
+        - key: bnjns.uk/reserved-for
+          operator: Equal
+          value: backstage
+          effect: NoSchedule

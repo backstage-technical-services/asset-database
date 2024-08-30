@@ -60,6 +60,7 @@ DEBUG_TOOLBAR_PANELS = [
 
 INTERNAL_IPS = ['127.0.0.1']
 
+USE_X_FORWARDED_HOST = True
 ROOT_URLCONF = 'bts_core.urls'
 
 TEMPLATES = [
@@ -85,26 +86,27 @@ WSGI_APPLICATION = 'bts_core.wsgi.application'
 
 DATABASE_ROUTERS = ['bts_core.dbrouters.AssetDbRouter']
 
-SECRET_KEY = os.environ['BTS_ASSET_DB_SECRET_KEY']
+SECRET_KEY = os.environ['SECRET_KEY']
 
+# We have to force this on to serve static files using the django server
 DEBUG = True
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bts_core',
-        'USER': os.environ['BTS_ASSET_DB_DBUSER'],
-        'PASSWORD': os.environ['BTS_ASSET_DB_DBPASS'],
-        'HOST': '127.0.0.1',
-        'PORT': '3306'
+        'NAME': os.environ['DB_NAME'],
+        'USER': os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASS'],
+        'HOST': os.environ['DB_HOST'],
+        'PORT': os.environ['DB_PORT']
     },
     'pat': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'bts_asset_db_pat',
-        'USER': os.environ['BTS_ASSET_DB_DBUSER'],
-        'PASSWORD': os.environ['BTS_ASSET_DB_DBPASS'],
-        'HOST': '127.0.0.1',
-        'PORT': '3306'
+        'NAME': os.environ['DB_NAME'],
+        'USER': os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASS'],
+        'HOST': os.environ['DB_HOST'],
+        'PORT': os.environ['DB_PORT']
     }
 }
 
@@ -149,3 +151,39 @@ STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": os.getenv("LOG_LEVEL", "INFO").upper(),
+            "formatter": "logfmt",
+        }
+    },
+    "formatters": {
+        "logfmt": {
+            "format": "level={levelname} caller=\"{module}:{filename}.{funcName}:{lineno}\" thread={threadName} msg=\"{message}\"",
+            "style": "{",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("LOG_LEVEL", default="INFO").upper(),
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": os.getenv("LOG_LEVEL", default="INFO").upper(),
+    },
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ['SMTP_HOST']
+EMAIL_PORT = os.environ['SMTP_PORT']
+EMAIL_HOST_USER = os.getenv('SMTP_USERNAME')
+EMAIL_HOST_PASSWORD = os.getenv('SMTP_PASSWORD')
+EMAIL_USE_SSL = os.getenv('SMTP_ENCRYPTION', 'none') == 'ssl'
+EMAIL_USE_TLS = os.getenv('SMTP_ENCRYPTION', 'none') == 'tls'

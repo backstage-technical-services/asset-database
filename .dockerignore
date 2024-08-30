@@ -1,0 +1,12 @@
+*
+!.docker/bin/*
+!bts_asset_db/
+!bts_core/
+!data/
+!utilities/
+!manage.py
+!Pipfile
+!Pipfile.lock
+!package.json
+!package-lock.json
+**/*_test.py

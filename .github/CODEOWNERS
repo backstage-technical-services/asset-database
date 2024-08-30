@@ -1,2 +1,3 @@
-.docker @bnjns
-/chart/ @bnjns
+.docker/ @bnjns
+.github/ @bnjns
+/chart/  @bnjns

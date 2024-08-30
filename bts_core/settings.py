@@ -61,6 +61,7 @@ DEBUG_TOOLBAR_PANELS = [
 INTERNAL_IPS = ['127.0.0.1']
 
 USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ROOT_URLCONF = 'bts_core.urls'
 
 TEMPLATES = [
@@ -180,6 +181,7 @@ LOGGING = {
     },
 }
 
+DEFAULT_FROM_EMAIL = "no-reply@bts-crew.com"
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ['SMTP_HOST']
 EMAIL_PORT = os.environ['SMTP_PORT']

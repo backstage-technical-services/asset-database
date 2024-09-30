@@ -18,7 +18,9 @@ jobs:
         run: |
           docker buildx create \
             --name container \
-            --driver docker-container
+            --driver docker-container \
+            --driver-opt memory=8192MB \
+            --driver-opt cpu-shares=4096
       - name: Log into the registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
       - name: Build image

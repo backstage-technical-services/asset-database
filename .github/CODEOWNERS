@@ -1,3 +1,7 @@
-.docker/ @bnjns
-.github/ @bnjns
-/chart/  @bnjns
+.docker/      @backstage-technical-services/devops
+.dockerignore @backstage-technical-services/devops
+
+.github/actions/   @backstage-technical-services/devops
+.github/workflows/ @backstage-technical-services/devops
+
+/chart/ @backstage-technical-services/devops

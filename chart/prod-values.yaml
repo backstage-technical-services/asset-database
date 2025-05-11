@@ -5,3 +5,6 @@ smtp:
   host: smtp.gmail.com
   port: 587
   encryption: tls
+
+resources:
+  memory: '128Mi'

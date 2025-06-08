@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - .github/ISSUE_TEMPLATE/*.yml
+      - .github/DISCUSSION_TEMPLATE/*.yml
+      - .github/*.yml
+      - .github/*.md
 
 jobs:
   push-image:

@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/helm-deploy
         with:
-          k3s-url: ${{ vars.K3S_URL }}
-          k3s-secret: ${{ secrets.K3S_SERVICE_ACCOUNT_SECRET }}
+          k8s-url: ${{ vars.K8S_URL }}
+          k8s-secret: ${{ secrets.K8S_SERVICE_ACCOUNT_SECRET }}
           environment: prod
           sha: ${{ github.sha }}

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: 'ghcr.io/backstage-technical-services/asset-database:{{ .Values.image.tag }}'
+          image: '685624812686.dkr.ecr.eu-west-1.amazonaws.com/backstage-asset-database:{{ .Values.image.tag }}'
           imagePullPolicy: Always
           envFrom:
             - secretRef:

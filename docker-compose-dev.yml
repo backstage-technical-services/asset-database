@@ -15,6 +15,8 @@ services:
       interval: 60s
       timeout: 5s
       retries: 3
+    volumes: 
+      - ./local/database:/var/lib/mysql
     restart: no
 
   mail:

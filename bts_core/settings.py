@@ -85,8 +85,6 @@ WSGI_APPLICATION = 'bts_core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASE_ROUTERS = ['bts_core.dbrouters.AssetDbRouter']
-
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # We have to force this on to serve static files using the django server

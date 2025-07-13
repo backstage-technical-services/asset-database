@@ -26,7 +26,7 @@ This system includes the following services to aid development:
  - PhpMyAdmin (web interface for the database)
     - http://localhost:8080
 
-Run `docker compose -f docker-compose-dev.yml up` to start them.
+Run `docker compose up` to start them.
 
 ### Setup Python environment
 Run `pipenv install`, and allow it to install Python 3.8.6 if prompted.

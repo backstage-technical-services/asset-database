@@ -8,16 +8,12 @@ class AssetDbRouter:
         """
         Attempts to read asset_db models go to asset_db_pat.
         """
-        if model._meta.app_label == 'bts_asset_db':
-            return 'pat'
         return 'default'
 
     def db_for_write(self, model, **hints):
         """
         Attempts to write asset_db models go to asset_db_pat.
         """
-        if model._meta.app_label == 'bts_asset_db':
-            return 'pat'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -31,7 +27,4 @@ class AssetDbRouter:
         Make sure asset_db apps only appear in the
         'asset_db_pat' database.
         """
-        if app_label == 'bts_asset_db':
-            return db == 'pat'
-        else:
-            return db != 'pat'
+        return True

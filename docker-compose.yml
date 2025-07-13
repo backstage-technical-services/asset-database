@@ -35,17 +35,4 @@ services:
     networks:
       - main
 
-  database-web:
-    image: phpmyadmin/phpmyadmin
-    container_name: bts-assetdb-database-web
-    ports:
-      - '8080:80'
-    environment:
-      PMA_HOST: database
-      PMA_PORT: 3306
-      PMA_USER: developer
-      PMA_PASSWORD: developer
-    restart: no
-    networks:
-      - main
   

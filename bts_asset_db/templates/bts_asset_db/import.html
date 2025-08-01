@@ -1,0 +1,199 @@
+{% extends "bts_asset_db/base.html" %}
+
+{% block title %}PAT Testing - Import Records{% endblock %}
+
+{% block body_wrapper %}
+    {% with page_section="import" page_id="import" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block fancy_header %}
+    {% with header_main="PAT Results" header_sub="Import Records" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block menu %}
+    {% with page_id="import" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+    <script>
+        async function refresh(){
+            const res = await fetch("{% url 'bts_asset_db:import_status' %}") 
+                const data = await res.json();
+                document.getElementById("progress").style.width = data.processed_percentage + "%";
+                document.getElementById("progress").setAttribute("aria-valuenow", data.processed_percentage);
+                document.getElementById("records").innerText = data.processed_records + "/" + data.total_records + " records processed. " + data.processed_percentage + "%";
+                if (data.state === "completed") {
+                    document.getElementById("progress").classList.remove("progress-bar-striped");
+                    document.getElementById("progress").classList.remove("progress-bar-animated");
+                    document.getElementById("progress").classList.add("bg-success");
+                    return true;
+                } else if (data.state === "cancelled" || data.state === "failed") {
+                    document.getElementById("progress").classList.remove("progress-bar-striped");
+                    document.getElementById("progress").classList.remove("progress-bar-animated");
+                    document.getElementById("progress").classList.add("bg-danger");
+                    return true
+                }
+                return false
+        }
+
+        function start_refresh(){
+            refresh()
+            document.getElementById("submit")?.classList?.add("d-none");
+            document.getElementById("preamble")?.classList?.add("d-none");
+            document.getElementById("error")?.classList?.add("d-none");
+            document.getElementById("progress_container").classList.remove("d-none");
+            document.getElementById("records").classList.remove("d-none");
+            setInterval(async () => {
+                const finished = await refresh();
+                if (finished) {
+                    document.getElementById("error")?.classList?.remove("d-none");
+                    clearInterval(this);
+                }
+            }, 1000)
+        }
+    </script>
+    
+    <div class="container">
+        {% if state == 'running' %}
+            <p>If you are confident that the job has failed, you can force cancel it by clicking the button below. The system will attempt to clean up any partial data.</p>
+            <div class="row">
+                <div class="col-12">
+                    <form method="post" action="{% url 'bts_asset_db:import_cancel' %}" class="col-12">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Cancel Import</button>
+                    </form>
+                </div>
+            </div>
+            <div id="progress_container" class="progress mt-4">
+                <div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ job.processed_percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ job.processed_percentage }}%"></div>
+            </div>
+            <p id="records">{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%</p>
+            <script>start_refresh()</script>
+        {% endif %}
+        {% if state == 'cancelled' or state == 'failed' %}
+            <div class="progress mt-4">
+                <div class="progress-bar progress-bar-striped bg-danger" role="progressbar" aria-valuenow="{{ job.processed_percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ job.processed_percentage }}%"></div>
+            </div>
+            <p>{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%</p>
+        {% endif %}
+        {% if state == 'completed' %}
+            <div class="progress mt-4">
+                <div class="progress-bar progress-bar-striped bg-success" role="progressbar" aria-valuenow="{{ job.processed_percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ job.processed_percentage }}%"></div>
+            </div>
+            <p>{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%</p>
+        {% endif %}
+        {% if state == 'ready' %}
+            <div id="preamble" class="row">
+                <div class="col-12">
+                    <p>
+                        Use the form below to import data into the PAT Testing database. The system accepts unprocessed SSS files only. Ensure that the file contains data from one machine only. 
+                    </p>
+                </div>
+            </div>
+
+            <div id="submit" class="row">
+                <div class="col-12">
+                    <form onsubmit="start_refresh()" method="post" action="{% url 'bts_asset_db:import_upload' %}" enctype="multipart/form-data" class="col-12">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input type="file" class="form-control-file" id="file" name="file" required accept=".sss">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </form>
+                </div>
+            </div>
+            <div id="progress_container" class="progress mt-4 d-none">
+                <div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ job.processed_percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ job.processed_percentage }}%"></div>
+            </div>
+            <p class="d-none" id="records">0/0 records processed. 0%</p>
+        {% endif %}
+        {% if jobs %}
+            <h2 class="mt-4">Past Jobs</h2>
+            <div class="container">
+                    <table class="table table-bts">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>State</th>
+                                <th>Completion</th>
+                                <th>Filename</th>
+                                <th>Started</th>
+                                <th>Finished</th>
+                                <th>More details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in jobs %}
+                                <tr>
+                                    <td>{{ job.id }}</td>
+                                    <td>{{ job.status }}</td>
+                                    <td>{{ job.processed_percentage }}%</td>
+                                    <td>{{ job.filename }}</td>
+                                    <td>{{ job.start_timestamp }}</td>
+                                    <td>{{ job.end_timestamp }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#jobDetailsModal{{ job.id }}">
+                                            View
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% for job in jobs %}
+                        <div class="modal fade"
+                            id="jobDetailsModal{{ job.id }}"
+                            tabindex="-1"
+                            role="dialog"
+                            aria-labelledby="testResultModal"
+                            aria-hidden="true">
+                            <div class="modal-dialog modal-xl"
+                                role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="testResultModal">
+                                            Job {{ job.id }} Details
+                                        </h5>
+                                        <button type="button"
+                                                class="close"
+                                                data-dismiss="modal"
+                                                aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>State:</strong> {{ job.status }}</p>
+                                        <p><strong>Processed records:</strong> {{ job.processed_records }}/{{ job.total_records }}</p>
+                                        {% if job.status == 'failed' %}
+                                            <p class="text-danger"><strong>Error:</strong> {{ job.error_message }}</p>
+                                        {% endif %}
+                                        <p><strong>User:</strong> {{ job.user.username }}</p>
+                                        <p><strong>Machine:</strong> {{ job.machine.serial_number }}</p>
+                                        
+
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button"
+                                                class="btn btn-secondary"
+                                                data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+            {% endif %}
+
+    </div>
+
+
+
+{% endblock %}

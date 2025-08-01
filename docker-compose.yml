@@ -7,7 +7,7 @@ services:
     image: mariadb:10.4
     container_name: bts-assetdb-database
     ports:
-      - '3306:3306'
+      - '6021:3306'
     environment:
       MYSQL_DATABASE: asset_register
       MYSQL_ROOT_PASSWORD: developer

@@ -6,6 +6,8 @@ services:
   database:
     image: mariadb:10.4
     container_name: bts-assetdb-database
+    networks:
+      - main
     ports:
       - '6021:3306'
     environment:
@@ -20,17 +22,14 @@ services:
       timeout: 5s
       retries: 3
     restart: no
-    networks:
-      - main
+
 
   mail:
     image: djfarrelly/maildev
     container_name: bts-assetdb-mail
+    networks:
+      - main
     ports:
       - '8081:80'
       - '1025:25'
     restart: no
-    networks:
-      - main
-
-  

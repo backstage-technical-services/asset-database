@@ -30,6 +30,6 @@ services:
     networks:
       - main
     ports:
-      - '8081:80'
+      - '6022:80'
       - '1025:25'
     restart: no

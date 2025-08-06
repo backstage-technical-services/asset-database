@@ -23,7 +23,6 @@ services:
       retries: 3
     restart: no
 
-
   mail:
     image: djfarrelly/maildev
     container_name: bts-assetdb-mail
@@ -33,3 +32,23 @@ services:
       - '6022:80'
       - '1025:25'
     restart: no
+
+  site:
+    build:
+      context: .
+      dockerfile: .docker/local.Dockerfile
+    container_name: bts-assetdb-site
+    networks:
+      - main
+    ports:
+      - '8000:8000'
+    env_file:
+      - .env
+    volumes:
+      - '.:/app'
+    depends_on:
+      database:
+        condition: service_healthy
+      mail:
+        condition: service_started
+    restart: 'no'

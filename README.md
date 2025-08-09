@@ -9,8 +9,7 @@ Administrative information can be found on the [Wiki](https://wiki.bts-crew.com/
 
 ## Development pre-requisites
 
- - [Pipenv](https://pipenv.pypa.io/en/latest/) - for managing Python dependencies
- - [Docker](https://www.docker.com/) - for running the database in a container (alternatively just a MariaDB server)
+ - [Docker](https://www.docker.com/) - for running the site and auxiliary services in containers
  - [Cloned repo](https://github.com/backstage-technical-services/asset-database) - this repository cloned to your local machine
 
 ## Running the system
@@ -38,8 +37,6 @@ If using an IDE with support for a custom interpreter, be sure to change the Pyt
 
 ### Run database migrations
 Run `scripts/site.sh manage migrate` to apply the database migrations.
-
-You can check they have applied properly by observing the created tables on PhpMyAdmin: http://localhost:8080/index.php?route=/database/structure&db=asset_register
 
 ### Creating an account
 Create the first admin account by running `scripts/site.sh manage createsuperuser` and following the prompts.

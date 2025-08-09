@@ -36,6 +36,8 @@ Commands:
     Run any pipenv command (alias for pipenv run).
   npm [OPTIONS] COMMAND
     Run any npm script (alias for npm run).
+  manage [OPTIONS] COMMAND
+    Run any Django management command (alias for pipenv run python3 manage.py).
   install [--update]
     Install both the Python and JavaScript dependencies. Use the --update flag to update the dependencies to their
     latest versions.
@@ -102,6 +104,10 @@ function _pipenv() {
 
 function _npm() {
   _exec npm run "$@"
+}
+
+function _manage() {
+  _exec pipenv run python3 manage.py "$@"
 }
 
 function _install() {
@@ -177,6 +183,9 @@ pipenv)
   ;;
 npm)
   _npm "$@"
+  ;;
+manage)
+  _manage "$@"
   ;;
 install)
   _install "$@"

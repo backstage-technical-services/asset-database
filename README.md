@@ -9,8 +9,7 @@ Administrative information can be found on the [Wiki](https://wiki.bts-crew.com/
 
 ## Development pre-requisites
 
- - [Pipenv](https://pipenv.pypa.io/en/latest/) - for managing Python dependencies
- - [Docker](https://www.docker.com/) - for running the database in a container (alternatively just a MariaDB server)
+ - [Docker](https://www.docker.com/) - for running the site and auxiliary services in containers
  - [Cloned repo](https://github.com/backstage-technical-services/asset-database) - this repository cloned to your local machine
 
 ## Running the system
@@ -18,31 +17,27 @@ Administrative information can be found on the [Wiki](https://wiki.bts-crew.com/
 ### Setup environment variables
 Copy `.env.example` to `.env` and populate the `SECRET_KEY` with any random string.
 
+### Build the project
+The site itself runs inside of a docker container during development so that dependencies can be managed easily. 
+
+Build the project by running: `scripts/site.sh rebuild`
+
 ### Start auxiliary services
 This system includes the following services to aid development:
- - MariaDB database 
+ - MariaDB database (port 6021)
  - Mail server (view emails sent by the system without actually sending)
-    - http://localhost:8081
- - PhpMyAdmin (web interface for the database)
-    - http://localhost:8080
+    - http://localhost:6022
 
-Run `docker compose up` to start them.
+Run `scripts/site.sh start` to start them.
+
+The main site will be available at http://localhost:8000
 
 ### Setup Python environment
-Run `pipenv install`, and allow it to install Python 3.8.6 if prompted.
-
 If using an IDE with support for a custom interpreter, be sure to change the Python interpreter to the one created by Pipenv for linting to work properly. 
 
 ### Run database migrations
-Run `pipenv run python3 manage.py migrate` to apply the database migrations.
-
-You can check they have applied properly by observing the created tables on PhpMyAdmin: http://localhost:8080/index.php?route=/database/structure&db=asset_register
-
-### Start the system
-Run `pipenv run python3 manage.py runserver 0.0.0.0:8000` to start the system. 
-
-You can then access the system at http://localhost:8000.
+Run `scripts/site.sh manage migrate` to apply the database migrations.
 
 ### Creating an account
-Create the first admin account by running `pipenv run python3 manage.py createsuperuser` and following the prompts.
+Create the first admin account by running `scripts/site.sh manage createsuperuser` and following the prompts.
 

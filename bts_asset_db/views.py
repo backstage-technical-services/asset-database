@@ -315,7 +315,7 @@ def import_check_job_state(request, state):
 def import_home(request):
     context = {'navbar_search': NavBarSearchForm()}
     context["state"] = "ready"
-    context["jobs"] = ImportJob.objects.order_by('-start_timestamp')[:25]
+    context["jobs"] = ImportJob.objects.order_by('-start_timestamp')[:50]
     
 
     running_job = import_check_job_state(request, "running")
@@ -329,10 +329,8 @@ def import_home(request):
     
 
 def import_upload(request):
-    # TODO: Validate file extension
-    # TODO: Check if filename already exists in the database, and warn user
-    # TODO: cancelled by? probably not necessary
     context = {'navbar_search': NavBarSearchForm(), 'state': 'running'}
+    context["jobs"] = ImportJob.objects.order_by('-start_timestamp')[:25]
     if request.method == 'POST':
         running_job = import_check_job_state(request, "running")
         if running_job:
@@ -343,15 +341,23 @@ def import_upload(request):
 
         upload = request.FILES.get('file')
        
+        if not upload.name.endswith('.sss'):
+            context["state"] = "ready"
+            context["msg_error"] = f'File {upload.name} is not a valid SSS file. Please upload a valid SSS file.'
+            return render(request, "bts_asset_db/import.html", context)
+
+        previous_job = ImportJob.objects.filter(filename=upload.name, status="completed").first()
+
+        if previous_job:
+            context["state"] = "ready"
+            context["msg_error"] = f'File {upload.name} was already imported successfully in job {previous_job.id}. Importing the data in this file again will create duplicate records.'
+            return render(request, "bts_asset_db/import.html", context)
+
         job = ImportJob.objects.create(
             user=request.user,
             filename=upload.name
         )
 
-        if not upload.name.endswith('.sss'):
-            context["state"] = "ready"
-            context["msg_error"] = f'File {upload.name} is not a valid SSS file. Please upload a valid SSS file.'
-            return render(request, "bts_asset_db/import.html", context)
 
         job.save()        
 
@@ -392,6 +398,7 @@ def import_upload(request):
 
 def import_cancel(request):
     context = {'navbar_search': NavBarSearchForm(), 'state': 'failed'}
+    context["jobs"] = ImportJob.objects.order_by('-start_timestamp')[:25]
     if request.method == 'POST':
         running_job = import_check_job_state(request, "running")
 

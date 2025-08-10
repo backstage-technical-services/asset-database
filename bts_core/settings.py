@@ -85,8 +85,6 @@ WSGI_APPLICATION = 'bts_core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASE_ROUTERS = ['bts_core.dbrouters.AssetDbRouter']
-
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # We have to force this on to serve static files using the django server
@@ -94,14 +92,6 @@ DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ['DB_NAME'],
-        'USER': os.environ['DB_USER'],
-        'PASSWORD': os.environ['DB_PASS'],
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.environ['DB_PORT']
-    },
-    'pat': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ['DB_NAME'],
         'USER': os.environ['DB_USER'],

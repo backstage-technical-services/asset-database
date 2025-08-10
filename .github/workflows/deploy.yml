@@ -52,6 +52,9 @@ jobs:
   manifest:
     name: Create manifest
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
     needs: [push-image]
     steps:
       - uses: aws-actions/configure-aws-credentials@v4

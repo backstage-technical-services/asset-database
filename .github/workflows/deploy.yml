@@ -43,8 +43,8 @@ jobs:
         with:
           push: true
           file: .docker/prod.Dockerfile
-          cache-from: type=registry,ref=${{ env.ECR_URL }}:cache
-          cache-to: type=registry,ref=${{ env.ECR_URL }}:cache
+          cache-from: type=registry,ref=${{ env.ECR_URL }}:cache-${{ matrix.tag }}
+          cache-to: type=registry,ref=${{ env.ECR_URL }}:cache-${{ matrix.tag }}
           provenance: false
           tags: |
             ${{ env.ECR_URL }}:${{ github.sha }}-${{ matrix.tag }}

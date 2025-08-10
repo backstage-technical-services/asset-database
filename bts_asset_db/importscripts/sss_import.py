@@ -162,7 +162,7 @@ def parse_record(payload):
         # Seek past to start of next sub-field
         payload = payload[len(current_test):]
 
-    if record.timestamp > record.machine_serial_no.last_imported_record_time:
+    if record.timestamp > (record.machine_serial_no.last_imported_record_time or make_aware(datetime.datetime(1970, 1, 1, 0, 0))):
         if not record.retest_freq_months:
             record.retest_freq_months = 12
         record.save()

@@ -172,7 +172,7 @@ class ImportJob(models.Model):
     end_timestamp = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, default='running') 
     error_message = models.TextField(null=True, blank=True)
-    total_records = models.IntegerField(default=-1) # prevents division by zero
+    total_records = models.IntegerField(default=0) 
     processed_records = models.IntegerField(default=0)
     machine = models.ForeignKey('TestingMachine', on_delete=models.PROTECT, null=True, blank=True)
     user = models.ForeignKey('auth.User', on_delete=models.PROTECT, null=True, blank=True)
@@ -180,7 +180,10 @@ class ImportJob(models.Model):
     
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)        
-        self.processed_percentage = round(self.processed_records / self.total_records * 100)
+        try:
+            self.processed_percentage = round(self.processed_records / self.total_records * 100)
+        except ZeroDivisionError:
+            self.processed_percentage = 0
 
     def __str__(self):
         return f"Import Job {self.job_id} - {self.status} ({self.start_timestamp})"

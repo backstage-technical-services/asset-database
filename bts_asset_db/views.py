@@ -1,3 +1,4 @@
+import os
 from traceback import print_exc
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -14,6 +15,7 @@ from bts_asset_db.signals import import_cancelled
 from .forms import *
 from .models import *
 from itertools import chain
+import subprocess
 
 
 def tokenise_search(search_query):
@@ -307,7 +309,11 @@ def import_check_job_state(request, state):
     if jobs_state.exists():
         job = jobs_state.first()
 
-        job.processed_percentage = round(job.processed_records / job.total_records * 100)
+        try:
+
+            job.processed_percentage = round(job.processed_records / job.total_records * 100)
+        except ZeroDivisionError:
+            job.processed_percentage = 0
         return job
     
 
@@ -353,11 +359,30 @@ def import_upload(request):
             context["msg_error"] = f'File {upload.name} was already imported successfully in job {previous_job.id}. Importing the data in this file again will create duplicate records.'
             return render(request, "bts_asset_db/import.html", context)
 
+        backup_file = f'/app/backups/import_backup_{timezone.now().strftime("%Y%m%d_%H%M%S")}.sql'
+        try:
+            subprocess.run(f'mysqldump -u {os.environ["DB_USER"]} --password={os.environ["DB_PASS"]} -h {os.environ["DB_HOST"]} {os.environ["DB_NAME"]} > {backup_file}', shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print_exc()
+            context["state"] = "ready"
+            e_str = str(e)
+            e_str = e_str.replace(os.environ["DB_USER"], "*****")
+            e_str = e_str.replace(os.environ["DB_PASS"], "*****")
+            context["msg_error"] = f'Import failed to start. Database backup failed: {e_str}'
+            return render(request, "bts_asset_db/import.html", context)
+        
+        backups = sorted(os.listdir('/app/backups/'))
+        if len(backups) > 10:
+            for backup in backups[:-10]:
+                # prevent real backups from being deleted when lots of failed imports happen
+                # only cycle a backup if it is older than 7 days
+                if os.path.getmtime(f'/app/backups/{backup}') < (timezone.now() - timezone.timedelta(days=7)).timestamp():
+                    os.remove(f'/app/backups/{backup}')
+
         job = ImportJob.objects.create(
             user=request.user,
             filename=upload.name
         )
-
 
         job.save()        
 
@@ -389,7 +414,12 @@ def import_upload(request):
             context["state"] = "completed"
             context["msg_general"] = f"Job {job.id} completed successfully"
 
-        context["job"].processed_percentage = round(context["job"].processed_records / context["job"].total_records * 100)
+        try:
+
+            context["job"].processed_percentage = round(context["job"].processed_records / context["job"].total_records * 100)
+
+        except ZeroDivisionError:
+            context["job"].processed_percentage = 0
         
         
         return render(request, "bts_asset_db/import.html", context)
@@ -432,7 +462,10 @@ def import_status(request):
             data['start_timestamp'] = last_job.start_timestamp.isoformat()
             data['end_timestamp'] = last_job.end_timestamp.isoformat() if last_job.end_timestamp else None
             data['processed_records'] = last_job.processed_records
-            data['processed_percentage'] = round(last_job.processed_records / last_job.total_records * 100) if last_job.total_records > 0 else 0
+            try:
+                data['processed_percentage'] = round(last_job.processed_records / last_job.total_records * 100) if last_job.total_records > 0 else 0
+            except ZeroDivisionError:
+                data['processed_percentage'] = 0
             data['total_records'] = last_job.total_records
             data['error_message'] = last_job.error_message or ''
         else:

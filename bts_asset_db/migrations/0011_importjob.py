@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('end_timestamp', models.DateTimeField(blank=True, null=True)),
                 ('status', models.CharField(default='running', max_length=20)),
                 ('error_message', models.TextField(blank=True, null=True)),
-                ('total_records', models.IntegerField(default=-1)),
+                ('total_records', models.IntegerField(default=0)),
                 ('processed_records', models.IntegerField(default=0)),
                 ('filename', models.CharField(blank=True, max_length=255, null=True)),
                 ('machine', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='bts_asset_db.testingmachine')),

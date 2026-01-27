@@ -15,6 +15,7 @@ import datetime
 machine_serial = None
 job = None
 cancelled = False
+processed_records = 0
 
 @receiver(import_cancelled)
 def import_cancelled_handler(sender, **kwargs):
@@ -50,7 +51,7 @@ def update_machine_latest_record_times():
 
 
 def read_sss(file_contents):
-    global job, machine_serial
+    global job, machine_serial, processed_records
     records = get_records(file_contents, SSSRecordHeader())
     machine_serial = None
     # duplicates generator
@@ -62,32 +63,21 @@ def read_sss(file_contents):
 
     records = iter(records)
 
-    updated_machine_serial = False
     processed_records = 0
     try:
-        while True:
-            if cancelled:
-                logging.info("Import job cancelled, rolling back transaction")
-                transaction.rollback()
-                job.cancel()
-                raise ImportJobCancelled()
-            try:
-                payload = next(records)
-                ImportJob.objects.filter(status='running').update(
-                    processed_records=processed_records + 1,
-                )
-                processed_records += 1
-            except StopIteration:
-                # file parsing complete
-                break
-            with transaction.atomic():
+        with transaction.atomic():
+            while True:
+                if cancelled:
+                    logging.info("Import job cancelled, rolling back transaction")
+                    raise ImportJobCancelled()
+                try:
+                    payload = next(records)
+                    processed_records += 1
+                except StopIteration:
+                    # file parsing complete
+                    break
                 parse_record(payload)
 
-            if not updated_machine_serial and machine_serial:
-                ImportJob.objects.filter(status='running').update(
-                    machine=TestingMachine.objects.get(serial_number=machine_serial)
-                )
-                updated_machine_serial = True
 
     except TestingMachine.DoesNotExist as e:
         logging.error(f"Testing machine with serial number '{machine_serial}' does not exist: {e}")
@@ -98,6 +88,16 @@ def read_sss(file_contents):
         logging.error(f"Error processing record: {e}")
         transaction.rollback()
         raise e
+    
+    finally:
+        ImportJob.objects.filter(id=job.id).update(
+            processed_records=processed_records,
+        )
+        if machine_serial:
+            ImportJob.objects.filter(id=job.id).update(
+                machine=TestingMachine.objects.get(serial_number=machine_serial)
+            )
+
 
     updated_job = ImportJob.objects.filter(id=job.id).first()
     if updated_job.status != 'running':
@@ -223,6 +223,12 @@ def export_record(record, data, test_type):
                     3: "item_make",
                     4: "item_model",
                     5: "item_serial_number"}
+        
+        if machine_serial == "Y49-0892":
+            # Unfortunately, this tester is special
+            # Backstage stores initials on the 2nd line, which is expected to be item_notes
+            # This tester outputs the 2nd line as item_group instead
+            mappings[0], mappings[2] = mappings[2], mappings[0]
 
         # Deals with the fact multiple user_data entries may be of the same type.
         # If this happens, separate with /n.
@@ -232,7 +238,14 @@ def export_record(record, data, test_type):
                         for ind, data in enumerate(user_data)
                         if record.user_data_input_order[ind] == mapping]
             if contents:
-                combined_data = "\n".join(contents)
+                combined_data = "\n".join(contents).strip()
+                if fieldname == "item_notes":
+                    try:
+                        # Setting tester by initials is a more reliable method. This will overwrite the earlier assignment if a match is found.
+                        record.tester = Tester.objects.get(Q(initials=combined_data))
+                    except Tester.DoesNotExist:
+                        0
+                        
                 setattr(record, fieldname, combined_data)
 
     elif test_type == 0xfe:

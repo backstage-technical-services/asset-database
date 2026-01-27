@@ -406,7 +406,7 @@ def import_upload(request):
             context["state"] = "ready"
             context["msg_error"] = f'Error during import: {e}'
             print_exc()
-            ImportJob.objects.filter(state="running").first().fail(e)
+            ImportJob.objects.filter(status="running").first().fail(e)
 
         job = ImportJob.objects.get(id=job.id)
         context['job'] = job
@@ -450,10 +450,11 @@ def import_cancel(request):
         return render(request, "bts_asset_db/import.html", context)
     else:
         return HttpResponse(status=405)
-    
+
+
 
 def import_status(request):
-    if request.method == 'GET':
+    if request.method == 'GET':        
         last_job = ImportJob.objects.order_by('-start_timestamp').first()
         data = {}
         if last_job:
@@ -461,9 +462,9 @@ def import_status(request):
             data['status'] = last_job.status
             data['start_timestamp'] = last_job.start_timestamp.isoformat()
             data['end_timestamp'] = last_job.end_timestamp.isoformat() if last_job.end_timestamp else None
-            data['processed_records'] = last_job.processed_records
+            data['processed_records'] = sss_import.processed_records
             try:
-                data['processed_percentage'] = round(last_job.processed_records / last_job.total_records * 100) if last_job.total_records > 0 else 0
+                data['processed_percentage'] = round(sss_import.processed_records / last_job.total_records * 100) if last_job.total_records > 0 else 0
             except ZeroDivisionError:
                 data['processed_percentage'] = 0
             data['total_records'] = last_job.total_records

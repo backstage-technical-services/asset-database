@@ -293,13 +293,15 @@ def test_get_item(request, item_id):
 
 def import_auth_wrapper(func):
     def wrapper(request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.has_perm('bts_asset_db.add_pattest'):
-            return func(request, *args, **kwargs)
-        else:
+        if not request.user.is_authenticated:
             return redirect_to_login(
                 request.get_full_path(),
                 reverse('admin:login', current_app="bts_asset_db")
             )
+        if not request.user.has_perm('bts_asset_db.add_pattest'):
+            return HttpResponse(status=403)
+        return func(request, *args, **kwargs)
+    
     return wrapper
 
    

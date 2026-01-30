@@ -185,7 +185,7 @@ def export_record(record, data, test_type):
         try:
             record.tester = Tester.objects.get(Q(machine_name=data['tester']) | Q(alt_machine_name=data['tester']))
         except Tester.DoesNotExist:
-            logging.error("Tester '%s' not found in database. Please add it before importing this record." % data['tester'])
+            logging.error(f"Tester '{data['tester']}' not found in database. Please add it before importing this record.")
             raise TesterNotFound(data['tester'])
         record.timestamp = make_aware(datetime.datetime(data['year'],
                                              data['month'],

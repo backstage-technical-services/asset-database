@@ -103,7 +103,6 @@ def read_sss(file_contents):
     if updated_job.status != 'running':
         logging.error(f"Import job status changed unexpectedly: {updated_job.status}")
         transaction.rollback()
-    print(processed_records, total_records)
     if processed_records == total_records:
         ImportJob.objects.filter(status='running').first().complete()
         transaction.commit()

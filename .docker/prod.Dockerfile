@@ -27,7 +27,7 @@ RUN apk upgrade && apk add --upgrade \
     python3-dev \
     pkgconfig \
     mariadb-dev \
-    mysql-client 
+    mariadb-client 
 
 # Install rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y

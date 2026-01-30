@@ -361,7 +361,7 @@ def import_upload(request):
 
         backup_file = f'/app/backups/import_backup_{timezone.now().strftime("%Y%m%d_%H%M%S")}.sql'
         try:
-            subprocess.run(f'mysqldump -u {os.environ["DB_USER"]} --password={os.environ["DB_PASS"]} -h {os.environ["DB_HOST"]} {os.environ["DB_NAME"]} > {backup_file}', shell=True, check=True)
+            subprocess.run(f'mariadb-dump -u {os.environ["DB_USER"]} --password={os.environ["DB_PASS"]} -h {os.environ["DB_HOST"]} {os.environ["DB_NAME"]} > {backup_file}', shell=True, check=True)
         except subprocess.CalledProcessError as e:
             print_exc()
             context["state"] = "ready"

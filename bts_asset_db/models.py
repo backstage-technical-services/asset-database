@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.core import validators
 from django.core.exceptions import ObjectDoesNotExist
@@ -164,3 +165,61 @@ class TestingMachine(models.Model):
 
     def __str__(self):
         return str(self.serial_number) + ": " + str(self.last_imported_record_time)
+
+
+class ImportJob(models.Model):
+    start_timestamp = models.DateTimeField(auto_now_add=True)
+    end_timestamp = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, default='running') 
+    error_message = models.TextField(null=True, blank=True)
+    total_records = models.IntegerField(default=0) 
+    processed_records = models.IntegerField(default=0)
+    machine = models.ForeignKey('TestingMachine', on_delete=models.PROTECT, null=True, blank=True)
+    user = models.ForeignKey('auth.User', on_delete=models.PROTECT, null=True, blank=True)
+    filename = models.CharField(max_length=255, null=True, blank=True)
+    
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)        
+        try:
+            self.processed_percentage = round(self.processed_records / self.total_records * 100)
+        except ZeroDivisionError:
+            self.processed_percentage = 0
+
+    def __str__(self):
+        return f"Import Job {self.job_id} - {self.status} ({self.start_timestamp})"
+    
+    def cancel(self):
+        if self.status == 'running':
+            ImportJob.objects.filter(id=self.id).update(
+                status='cancelled',
+                end_timestamp=datetime.now()
+            )
+            self.status = 'cancelled'
+            self.end_timestamp = datetime.now()
+        else:
+            raise ValueError("Cannot cancel a job that is not running.")
+        return self
+        
+    def complete(self):
+        if self.status == 'running':
+            ImportJob.objects.filter(id=self.id).update(
+                status='completed',
+                end_timestamp=datetime.now()
+            )
+            self.status = 'completed'
+            self.end_timestamp = datetime.now()
+        else:
+            raise ValueError("Cannot complete a job that is not running.")
+        
+    def fail(self, error_message):
+        if self.status == 'running':
+            ImportJob.objects.filter(id=self.id).update(
+                status='failed',
+                error_message=error_message,
+                end_timestamp=datetime.now()
+            )
+            self.status = 'failed'
+            self.error_message = error_message
+            self.end_timestamp = datetime.now()
+        else:
+            raise ValueError("Cannot fail a job that is not running.")

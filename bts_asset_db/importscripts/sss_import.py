@@ -1,24 +1,41 @@
 import logging
-import datetime
 from io import BytesIO
+
+from django.dispatch import receiver
+
+from bts_asset_db.importscripts.sss_errors import ImportJobCancelled, MachineNotFound, TesterNotFound
 from .sss_base import *
 from bts_asset_db.models import *
+from bts_asset_db.signals import import_cancelled
 from django.utils.timezone import make_aware
 from django.db.models import Q
+from django.db import transaction
+import datetime
 
+machine_serial = None
+job = None
+cancelled = False
+processed_records = 0
 
-def sss_import(uploaded_files):
+@receiver(import_cancelled)
+def import_cancelled_handler(sender, **kwargs):
+    logging.info("Import job cancelled signal received")
+    global cancelled
+    cancelled = True
+
+def sss_import(data):
+    global job, cancelled
+    cancelled = False
     logging.basicConfig(level=logging.INFO)
 
-    for filename in uploaded_files:
-        with open(filename, 'rb') as file:
-            file_contents = BytesIO(file.read())
-            try:
-                read_sss(file_contents)
-            except SSSSyntaxError as message:
-                print('End File {Error:"%s"}' % message)
-                continue
-
+    job = ImportJob.objects.filter(status='running').first()
+    
+    file_contents = BytesIO(data)
+    try:
+        read_sss(file_contents)
+    except SSSSyntaxError as message:
+        print('End File {Error:"%s"}' % message)
+        
     update_machine_latest_record_times()
 
 
@@ -34,16 +51,63 @@ def update_machine_latest_record_times():
 
 
 def read_sss(file_contents):
+    global job, machine_serial, processed_records
     records = get_records(file_contents, SSSRecordHeader())
+    machine_serial = None
+    # duplicates generator
+    records = list(records)
+    total_records = sum(1 for _ in iter(records))
+    ImportJob.objects.filter(status='running').update(
+        total_records=total_records
+    )       
 
-    while True:
-        try:
-            payload = next(records)
-        except StopIteration:
-            # file parsing complete
-            break
+    records = iter(records)
 
-        parse_record(payload)
+    processed_records = 0
+    try:
+        with transaction.atomic():
+            while True:
+                if cancelled:
+                    logging.info("Import job cancelled, rolling back transaction")
+                    raise ImportJobCancelled()
+                try:
+                    payload = next(records)
+                    processed_records += 1
+                except StopIteration:
+                    # file parsing complete
+                    break
+                parse_record(payload)
+
+
+    except TestingMachine.DoesNotExist as e:
+        logging.error(f"Testing machine with serial number '{machine_serial}' does not exist: {e}")
+        transaction.rollback()
+        raise MachineNotFound(machine_serial)
+
+    except Exception as e:
+        logging.error(f"Error processing record: {e}")
+        transaction.rollback()
+        raise e
+    
+    finally:
+        ImportJob.objects.filter(id=job.id).update(
+            processed_records=processed_records,
+        )
+        if machine_serial:
+            ImportJob.objects.filter(id=job.id).update(
+                machine=TestingMachine.objects.get(serial_number=machine_serial)
+            )
+
+
+    updated_job = ImportJob.objects.filter(id=job.id).first()
+    if updated_job.status != 'running':
+        logging.error(f"Import job status changed unexpectedly: {updated_job.status}")
+        transaction.rollback()
+    if processed_records == total_records:
+        ImportJob.objects.filter(status='running').first().complete()
+        transaction.commit()
+    else:
+        transaction.rollback()
 
 
 def get_records(file_contents, record_header):
@@ -97,7 +161,7 @@ def parse_record(payload):
         # Seek past to start of next sub-field
         payload = payload[len(current_test):]
 
-    if record.timestamp > record.machine_serial_no.last_imported_record_time:
+    if record.timestamp > (record.machine_serial_no.last_imported_record_time or make_aware(datetime.datetime(1970, 1, 1, 0, 0))):
         if not record.retest_freq_months:
             record.retest_freq_months = 12
         record.save()
@@ -107,6 +171,7 @@ def parse_record(payload):
 
 
 def export_record(record, data, test_type):
+    global machine_serial
     test = PatTest(test_type=test_type)
     entities_to_create = []
 
@@ -116,7 +181,11 @@ def export_record(record, data, test_type):
         record.testcode_2 = data['testcode2']
         record.site = data['site']
         record.location = data['location']
-        record.tester = Tester.objects.get(Q(machine_name=data['tester']) | Q(alt_machine_name=data['tester']))
+        try:
+            record.tester = Tester.objects.get(Q(machine_name=data['tester']) | Q(alt_machine_name=data['tester']))
+        except Tester.DoesNotExist:
+            logging.error(f"Tester '{data['tester']}' not found in database. Please add it before importing this record.")
+            raise TesterNotFound(data['tester'])
         record.timestamp = make_aware(datetime.datetime(data['year'],
                                              data['month'],
                                              data['day'],
@@ -153,6 +222,12 @@ def export_record(record, data, test_type):
                     3: "item_make",
                     4: "item_model",
                     5: "item_serial_number"}
+        
+        if machine_serial == "Y49-0892":
+            # Unfortunately, this tester is special
+            # Backstage stores initials on the 2nd line, which is expected to be item_notes
+            # This tester outputs the 2nd line as item_group instead
+            mappings[0], mappings[2] = mappings[2], mappings[0]
 
         # Deals with the fact multiple user_data entries may be of the same type.
         # If this happens, separate with /n.
@@ -162,14 +237,21 @@ def export_record(record, data, test_type):
                         for ind, data in enumerate(user_data)
                         if record.user_data_input_order[ind] == mapping]
             if contents:
-                combined_data = "\n".join(contents)
+                combined_data = "\n".join(contents).strip()
+                if fieldname == "item_notes":
+                    try:
+                        # Setting tester by initials is a more reliable method. This will overwrite the earlier assignment if a match is found.
+                        record.tester = Tester.objects.get(Q(initials=combined_data))
+                    except Tester.DoesNotExist:
+                        0
+                        
                 setattr(record, fieldname, combined_data)
 
     elif test_type == 0xfe:
         # Tester serial number and firmware
         record.machine_serial_no_id = data['serialnumber']
         record.machine_firmware_version = '%d.%d.%d' % (data['firmware1'], data['firmware2'], data['firmware3'])
-
+        machine_serial = data['serialnumber']
     else:
         # Unknown
         # logging.warning("Invalid or unknown type passed: %x" % test_type)

@@ -43,3 +43,7 @@ def testtranslate(test_no):
 @register.filter
 def preftranslate(param, test_no):
     return results[test_no]
+
+@register.filter
+def has_import_permission(user):
+    return user.is_staff and user.has_perm('bts_asset_db.add_pattest')

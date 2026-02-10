@@ -20,7 +20,7 @@ Copy `.env.example` to `.env` and populate the `SECRET_KEY` with any random stri
 ### Build the project
 The site itself runs inside of a docker container during development so that dependencies can be managed easily. 
 
-Build the project by running: `scripts/site.sh rebuild`
+Build the project by running: `scripts/site.sh rebuild` (not as root)
 
 ### Start auxiliary services
 This system includes the following services to aid development:

@@ -34,4 +34,12 @@ urlpatterns = [
     path('visual/search/', views.get_visuals, name='search_visual'),
     # ex: visual/12/note/
     path('visual/<int:vis_id>/note/', views.update_visual_note, name='update_visual_note'),
+    # ex: import/
+    path('import/', views.import_auth_wrapper(views.import_home), name='import_home'),
+    # ex: import/upload
+    path('import/upload/', views.import_auth_wrapper(views.import_upload), name='import_upload'),
+    # ex: import/cancel
+    path('import/cancel/', views.import_auth_wrapper(views.import_cancel), name='import_cancel'),
+    # ex: import/api/status
+    path('import/api/status/', views.import_auth_wrapper(views.import_status), name='import_status'),
 ]

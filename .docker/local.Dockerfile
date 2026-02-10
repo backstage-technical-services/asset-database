@@ -20,6 +20,7 @@ RUN apk upgrade \
       pkgconfig \
       python3-dev \
       mariadb-dev \
+      mariadb-client \
     && python3 -m pip install --upgrade pip \
     && pip3 install pipenv \
     && npm install -g yarn \

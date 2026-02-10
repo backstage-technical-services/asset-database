@@ -1,4 +1,7 @@
+
+
 {% block menu %}
+    {% load import_extras %}
     <nav class="navbar navbar-expand-sm navbar-dark">
         <div>
             <ul class="navbar-nav">
@@ -28,6 +31,17 @@
                                 Admin
                             </a>
                         </li>
+                    {% endif %}
+
+                    {% if user|has_import_permission %}
+                        {% if page_id == "import" %}
+                            <li class="nav-item active"><span class="sr-only">Current: </span>
+                        {% else %}
+                            <li class="nav-item">
+                        {% endif %}
+                            <a class="nav-link" href="{% url 'bts_asset_db:import_home' %}">
+                                Import
+                            </a>
                     {% endif %}
                 {% endblock %}
             </ul>

@@ -26,7 +26,8 @@ RUN apk upgrade && apk add --upgrade \
     openssl-dev \
     python3-dev \
     pkgconfig \
-    mariadb-dev
+    mariadb-dev \
+    mariadb-client 
 
 # Install rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -54,5 +55,6 @@ COPY utilities/ ./utilities/
 COPY manage.py ./
 
 VOLUME /app/data
+VOLUME /app/backups
 ENTRYPOINT ["/bin/entrypoint"]
 CMD ["python3", "manage.py", "runserver", "--noreload", "0.0.0.0:8000"]

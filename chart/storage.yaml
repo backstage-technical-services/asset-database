@@ -1,0 +1,42 @@
+########################################################################################################################
+# backups
+########################################################################################################################
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backstage-{{ .Values.environment }}-asset-database-backups
+  labels:
+    {{- include "asset-database.labels" . | nindent 4 }}
+    backstage.uk/storage-name: backups
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  storageClassName: aws-efs
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: fs-05929b3d75352ac77:/asset-database/{{ .Values.environment }}/backups
+    volumeAttributes:
+      encryptInTransit: 'true'
+  capacity:
+    storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.environment }}-asset-database-backups
+  labels:
+    {{- include "asset-database.labels" . | nindent 4 }}
+    backstage.uk/storage-name: backups
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: aws-efs
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      {{- include "asset-database.selectorLabels" . | nindent 6 }}
+      backstage.uk/storage-name: backups

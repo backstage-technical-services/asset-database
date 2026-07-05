@@ -10,6 +10,7 @@ from bts_asset_db.signals import import_cancelled
 from django.utils.timezone import make_aware
 from django.db.models import Q
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 import datetime
 
 machine_serial = None
@@ -62,10 +63,11 @@ def read_sss(file_contents):
     )       
 
     records = iter(records)
-
+    logging.info(f"Starting import job with {total_records} records to process")
     processed_records = 0
     try:
         with transaction.atomic():
+            logging.info("Transaction started")
             while True:
                 if cancelled:
                     logging.info("Import job cancelled, rolling back transaction")
@@ -78,15 +80,23 @@ def read_sss(file_contents):
                     break
                 parse_record(payload)
 
+            # Check if all records were processed before committing
+            updated_job = ImportJob.objects.filter(id=job.id).first()
+            if updated_job.status != 'running':
+                logging.error(f"Import job status changed unexpectedly: {updated_job.status}")
+                raise Exception("Import job status changed unexpectedly")
+            if processed_records != total_records:
+                logging.warning("Rolling back transaction due to mismatch in processed records and total records")
+                raise Exception("Mismatch in processed records and total records")
+            
+            logging.info("Committing transaction")
 
     except TestingMachine.DoesNotExist as e:
         logging.error(f"Testing machine with serial number '{machine_serial}' does not exist: {e}")
-        transaction.rollback()
         raise MachineNotFound(machine_serial)
 
     except Exception as e:
         logging.error(f"Error processing record: {e}")
-        transaction.rollback()
         raise e
     
     finally:
@@ -98,16 +108,8 @@ def read_sss(file_contents):
                 machine=TestingMachine.objects.get(serial_number=machine_serial)
             )
 
-
-    updated_job = ImportJob.objects.filter(id=job.id).first()
-    if updated_job.status != 'running':
-        logging.error(f"Import job status changed unexpectedly: {updated_job.status}")
-        transaction.rollback()
-    if processed_records == total_records:
-        ImportJob.objects.filter(status='running').first().complete()
-        transaction.commit()
-    else:
-        transaction.rollback()
+    # Only complete the job if transaction succeeded
+    ImportJob.objects.filter(status='running').first().complete()
 
 
 def get_records(file_contents, record_header):

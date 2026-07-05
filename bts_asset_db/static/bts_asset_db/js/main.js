@@ -414,6 +414,8 @@ function get_visual_records()
 function get_records()
 {
     console.log("get_records is working!"); // sanity check
+    document.getElementById("search_button_spinner").classList.remove("d-none");
+    document.getElementById("search_button_text").classList.add("d-none");
     $.ajax({
         url : "records/", // the endpoint
         type : "GET", // http method
@@ -427,6 +429,8 @@ function get_records()
             console.log(json); // log the returned json to the console
             $("#records_table tbody").html(json.records_rendered);
             $("#test_table").html(json.tests_rendered);
+            $("#search_button_spinner").addClass("d-none");
+            $("#search_button_text").removeClass("d-none");
             console.log("success"); // another sanity check
         },
 

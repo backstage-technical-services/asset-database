@@ -53,8 +53,7 @@ def get_records(request):
         search_type = request.GET.get('search_type')
         search_query = request.GET.get('search_query')
         page = int(request.GET.get('page', 1))
-        RESULTS = 25
-        offset = (int(page) - 1) * RESULTS
+        per_page = int(request.GET.get('per_page', 25))
 
         if search_type == "item_id":
             filter_functions = [Q(item__asset_id=search_query)]
@@ -78,9 +77,9 @@ def get_records(request):
         else:
             records = Record.objects.none()
 
-        records_paginator = Paginator(records, RESULTS)
+        records_paginator = Paginator(records, per_page)
         records = records_paginator.get_page(page)
-        tests = Paginator([list(x.pattest_set.all()) for x in records], RESULTS).get_page(page)
+        tests = Paginator([list(x.pattest_set.all()) for x in records], per_page).get_page(page)
         data = dict()
 
         data['page'] = page

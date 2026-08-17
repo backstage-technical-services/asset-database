@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.core import serializers
+from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.contrib.auth.views import redirect_to_login
 
@@ -51,6 +52,9 @@ def get_records(request):
     if request.method == "GET":
         search_type = request.GET.get('search_type')
         search_query = request.GET.get('search_query')
+        page = int(request.GET.get('page', 1))
+        RESULTS = 25
+        offset = (int(page) - 1) * RESULTS
 
         if search_type == "item_id":
             filter_functions = [Q(item__asset_id=search_query)]
@@ -74,12 +78,18 @@ def get_records(request):
         else:
             records = Record.objects.none()
 
-        tests = [list(x.pattest_set.all()) for x in records]
+        records_paginator = Paginator(records, RESULTS)
+        records = records_paginator.get_page(page)
+        tests = Paginator([list(x.pattest_set.all()) for x in records], RESULTS).get_page(page)
         data = dict()
+
+        data['page'] = page
         data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',
-                                                    {'records': records})
+                                                    {'records': records, 'page': page})
         data['tests_rendered'] = render_to_string('bts_asset_db/partials/record/tests_table.html',
                                                   {'records': records, 'tests': tests})
+        data['pagination_rendered'] = render_to_string('bts_asset_db/partials/record/records_pagination.html',
+                                                       {'records': records, 'page': page, 'num_pages': records_paginator.num_pages})
         return JsonResponse(data, safe=False)
 
     else:

@@ -411,7 +411,7 @@ function get_visual_records()
     })
 }
 
-function get_records()
+function get_records(page=1)
 {
     console.log("get_records is working!"); // sanity check
     document.getElementById("search_button_spinner").classList.remove("d-none");
@@ -421,13 +421,16 @@ function get_records()
         type : "GET", // http method
         data : {
             search_type : $('#id_search_type').val(),
-            search_query : $('#id_search_field').val()
+            search_query : $('#id_search_field').val(),
+            page: page
         }, // data sent with the get request
 
         // handle a successful response
         success : function(json) {
             console.log(json); // log the returned json to the console
             $("#records_table tbody").html(json.records_rendered);
+            console.log(json.pagination_rendered);
+            $("#pagination").html(json.pagination_rendered);
             $("#test_table").html(json.tests_rendered);
             $("#search_button_spinner").addClass("d-none");
             $("#search_button_text").removeClass("d-none");

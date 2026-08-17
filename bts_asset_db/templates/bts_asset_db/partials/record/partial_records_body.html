@@ -18,8 +18,12 @@
         </td>
     </tr>
 {% empty %}
-    <tr>
-        <td colspan="9" class="text-center">No records</td>
-    </tr>
+    {% if page > 0 %}
+        <tr>
+            <td colspan="9" class="text-center">No records</td>
+        </tr>
+    {% endif %}
+
 
 {% endfor %}
+

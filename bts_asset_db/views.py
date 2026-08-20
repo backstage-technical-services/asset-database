@@ -77,10 +77,15 @@ def get_records(request):
         else:
             records = Record.objects.none()
 
+        records = records.prefetch_related('pattest_set')
         records_paginator = Paginator(records, per_page)
         records = records_paginator.get_page(page)
         tests = Paginator([list(x.pattest_set.all()) for x in records], per_page).get_page(page)
         data = dict()
+
+        for record in records:
+            record.passed = all(test.passed for test in record.pattest_set.all() if test.passed is not None)
+
 
         data['page'] = page
         data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',

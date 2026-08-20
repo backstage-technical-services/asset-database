@@ -432,6 +432,7 @@ function get_records(page=1)
             console.log(json.pagination_rendered);
             $("#pagination").html(json.pagination_rendered);
             $("#test_table").html(json.tests_rendered);
+            $("#msg_area").html(json.msg_warning_rendered);
             $("#search_button_spinner").addClass("d-none");
             $("#search_button_text").removeClass("d-none");
             console.log("success"); // another sanity check

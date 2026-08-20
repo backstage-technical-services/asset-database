@@ -86,6 +86,12 @@ def get_records(request):
         for record in records:
             record.passed = all(test.passed for test in record.pattest_set.all() if test.passed is not None)
 
+        if search_type == "item_id" and records:
+            if page == 1 and records[0].passed is False:
+                data['msg_warning'] = f"Item {records[0].item.asset_id} has failed. Please place the item in a quarantine bin"
+            elif page == 1 and records[0].timestamp < timezone.now() - timezone.timedelta(days=365):
+                data['msg_warning'] = f"Item {records[0].item.asset_id} is out of PAT. Please place the item in a quarantine bin"
+
 
         data['page'] = page
         data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',
@@ -94,6 +100,8 @@ def get_records(request):
                                                   {'records': records, 'tests': tests})
         data['pagination_rendered'] = render_to_string('bts_asset_db/partials/record/records_pagination.html',
                                                        {'records': records, 'page': page, 'num_pages': records_paginator.num_pages})
+        data['msg_warning_rendered'] = render_to_string('bts_asset_db/partials/record/item_warning.html',
+                                                       {'msg_warning': data.get('msg_warning', '')})
         return JsonResponse(data, safe=False)
 
     else:

@@ -57,7 +57,7 @@ def get_tests(request):
 def get_records(request):
     if request.method == "GET":
         search_type = request.GET.get('search_type')
-        search_query = request.GET.get('search_query')
+        search_query = (request.GET.get('search_query') or '').strip()
         tester = request.GET.get('tester')
         machine = request.GET.get('machine')
         passed = request.GET.get('passed')
@@ -129,7 +129,7 @@ def get_records(request):
 
         if search_type == "item_id" and search_query and search_query.strip():
             latest_record = Record.objects.filter(
-                item__asset_id=search_query.strip()
+                item__asset_id=search_query
             ).order_by('-timestamp').prefetch_related('pattest_set').first()
             if latest_record:
                 latest_record.passed = all(

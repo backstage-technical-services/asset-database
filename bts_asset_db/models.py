@@ -133,9 +133,15 @@ class PatTest(models.Model):
         if self.test_type == 241:
             return False
         if self.test_type == 242:
-            return self.test_parameter_2 == "True"
+            if self.test_parameter_2 in ("True", "False"):
+                return self.test_parameter_2 == "True"
+            return any(parameter is not None for parameter in (
+                self.test_parameter_1, self.test_parameter_2, self.test_parameter_3
+            ))
         if self.test_type in range(243, 249):
-            return self.test_parameter_1 == "True"
+            if self.test_parameter_1 in ("True", "False"):
+                return self.test_parameter_1 == "True"
+            return self.test_parameter_1 is not None
         return None
 
     def __str__(self):

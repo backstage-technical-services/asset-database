@@ -98,7 +98,12 @@ def get_records(request):
         if passed in ('yes', 'no'):
             failed_test = PatTest.objects.filter(record=OuterRef('pk')).filter(
                 Q(test_type=241) |
-                Q(test_type=242) & (Q(test_parameter_2='False') | Q(test_parameter_2__isnull=True)) |
+                Q(test_type=242) & (
+                    Q(test_parameter_2='False') |
+                    (Q(test_parameter_1__isnull=True) &
+                     Q(test_parameter_2__isnull=True) &
+                     Q(test_parameter_3__isnull=True))
+                ) |
                 Q(test_type__in=range(243, 249)) &
                 (Q(test_parameter_1='False') | Q(test_parameter_1__isnull=True))
             )

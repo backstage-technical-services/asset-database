@@ -114,11 +114,21 @@ def get_records(request):
         for record in records:
             record.passed = all(test.passed for test in record.pattest_set.all() if test.passed is not None)
 
-        if search_type == "item_id" and search_query and records:
-            if page == 1 and records[0].passed is False:
-                data['msg_warning'] = f"Item {records[0].item.asset_id} has failed. Please place the item in a quarantine bin"
-            elif page == 1 and records[0].timestamp < timezone.now() - timezone.timedelta(days=365):
-                data['msg_warning'] = f"Item {records[0].item.asset_id} is out of PAT. Please place the item in a quarantine bin"
+        if search_type == "item_id" and search_query and search_query.strip():
+            latest_record = Record.objects.filter(
+                item__asset_id=search_query.strip()
+            ).order_by('-timestamp').prefetch_related('pattest_set').first()
+            if latest_record:
+                latest_record.passed = all(
+                    test.passed for test in latest_record.pattest_set.all()
+                    if test.passed is not None
+                )
+                if latest_record.passed is False:
+                    data['msg_warning'] = f"Item {latest_record.item.asset_id} has failed. Please place the item in a quarantine bin"
+                # The fixed 12-month threshold follows internal risk assessments;
+                # retest_freq_months is currently unused for this warning.
+                elif latest_record.timestamp < timezone.now() - timezone.timedelta(days=365):
+                    data['msg_warning'] = f"Item {latest_record.item.asset_id} is out of PAT. Please place the item in a quarantine bin"
 
 
         data['page'] = page

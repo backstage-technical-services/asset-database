@@ -1,13 +1,12 @@
 {% for record in records %}
-    <tr>
+    <tr class="{% if record.passed == False %}bg-danger{% endif %}">
         <td>{{ record.item.asset_id }}</td>
         <td>{{ record.timestamp }}</td>
         <td class="d-none d-md-table-cell">{{ record.site }}</td>
         <td class="d-none d-md-table-cell">{{ record.location }}</td>
         <td>{{ record.tester }}</td>
-        <td class="d-none d-md-table-cell">{{ record.testcode_1 }}</td>
-        <td class="d-none d-md-table-cell">{{ record.testcode_2 }}</td>
-        <td class="d-none d-lg-table-cell">{{ record.retest_freq_months }}</td>
+        <td class="d-none d-md-table-cell">{{ record.item_description }}</td>
+        <td class="d-none d-md-table-cell text-center">{% if record.passed %}Yes{% else %}No{% endif %}</td>
         <td class="align-middle text-center">
             <a class="btn btn-info"
                data-toggle="modal"
@@ -18,8 +17,12 @@
         </td>
     </tr>
 {% empty %}
-    <tr>
-        <td colspan="9" class="text-center">No records</td>
-    </tr>
+    {% if page > 0 %}
+        <tr>
+            <td colspan="9" class="text-center">No records</td>
+        </tr>
+    {% endif %}
+
 
 {% endfor %}
+

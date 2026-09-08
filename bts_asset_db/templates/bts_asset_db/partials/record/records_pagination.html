@@ -1,0 +1,28 @@
+{% if records|length > 0 %}
+    <div class="d-flex justify-content-center">
+        <nav aria-label="...">
+            <ul class="pagination">
+                <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                    <span class="page-link" href="#" onclick="get_records({{ page|add:'-1' }}); return false;">Previous</span>
+                </li>
+                {% if page > 1 %}
+                    <li class="page-item"><a class="page-link" href="#" onclick="get_records({{ page|add:'-1' }}); return false;">{{ page|add:"-1" }}</a></li>
+                {% endif %}
+                <li class="page-item active">
+                    <span class="page-link">
+                        {{ page }}
+                        <span class="sr-only">(current)</span>
+                    </span>
+                </li>
+                {% if num_pages > page %}
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="get_records({{ page|add:'1' }}); return false;">{{ page|add:"1" }}</a>
+                    </li>
+                {% endif %}
+                <li class="page-item {% if num_pages <= page %}disabled{% endif %}">
+                    <a class="page-link" href="#" onclick="get_records({{ page|add:'1' }}); return false;">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+{% endif %}

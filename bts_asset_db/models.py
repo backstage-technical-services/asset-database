@@ -118,12 +118,31 @@ class Record(models.Model):
             self.save()
 
 
+
 class PatTest(models.Model):
     record = models.ForeignKey(Record, models.PROTECT)
     test_type = models.IntegerField()
     test_parameter_1 = models.CharField(max_length=5, blank=True, null=True)
     test_parameter_2 = models.CharField(max_length=18, blank=True, null=True)
     test_parameter_3 = models.CharField(max_length=6, blank=True, null=True)
+
+    @property
+    def passed(self):
+        if self.test_type == 240:
+            return True
+        if self.test_type == 241:
+            return False
+        if self.test_type == 242:
+            if self.test_parameter_2 in ("True", "False"):
+                return self.test_parameter_2 == "True"
+            return any(parameter is not None for parameter in (
+                self.test_parameter_1, self.test_parameter_2, self.test_parameter_3
+            ))
+        if self.test_type in range(243, 249):
+            if self.test_parameter_1 in ("True", "False"):
+                return self.test_parameter_1 == "True"
+            return self.test_parameter_1 is not None
+        return None
 
     def __str__(self):
         return str(self.id)

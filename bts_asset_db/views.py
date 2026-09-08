@@ -1,21 +1,28 @@
 import os
+import subprocess
+from itertools import chain
 from traceback import print_exc
+
+from django.contrib.auth.views import redirect_to_login
+from django.core import serializers
+from django.core.paginator import Paginator
+from django.db.models import Count, Exists, OuterRef, Q
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
-from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.utils import timezone
-from django.core import serializers
-from django.db.models import Q, Count
-from django.contrib.auth.views import redirect_to_login
 
 from bts_asset_db.importscripts import sss_import
-from bts_asset_db.importscripts.sss_errors import ImportJobCancelled, MachineNotFound, TesterNotFound
+from bts_asset_db.importscripts.sss_errors import (
+    ImportJobCancelled,
+    MachineNotFound,
+    TesterNotFound,
+)
 from bts_asset_db.signals import import_cancelled
+
 from .forms import *
 from .models import *
-from itertools import chain
-import subprocess
 
 
 def tokenise_search(search_query):
@@ -40,7 +47,7 @@ def index(request):
 def get_tests(request):
     if request.method == "GET":
         record_id = request.GET.get("record")
-        record = Record.objects.select_related('item').get(pk=record_id)
+        record = Record.objects.select_related('item', 'machine_serial_no').get(pk=record_id)
         tests = [list(record.pattest_set.all())]
         data = {'tests_rendered': render_to_string('bts_asset_db/partials/record/tests_table.html',
                                                    {'records': [record], 'tests': tests})}
@@ -50,9 +57,19 @@ def get_tests(request):
 def get_records(request):
     if request.method == "GET":
         search_type = request.GET.get('search_type')
-        search_query = request.GET.get('search_query')
+        search_query = (request.GET.get('search_query') or '').strip()
+        tester = request.GET.get('tester')
+        machine = request.GET.get('machine')
+        passed = request.GET.get('passed')
+        location = request.GET.get('location')
+        timestamp_from = request.GET.get('timestamp_from')
+        timestamp_to = request.GET.get('timestamp_to')
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 25))
 
-        if search_type == "item_id":
+        if not search_query or not search_query.strip():
+            records = Record.objects.all().order_by('-timestamp')
+        elif search_type == "item_id":
             filter_functions = [Q(item__asset_id=search_query)]
         elif search_type == "string_data":
             tokens = tokenise_search(search_query)
@@ -66,20 +83,76 @@ def get_records(request):
         else:
             filter_functions = Q(item_id=None)
 
-        if filter_functions:
+        if search_query and search_query.strip() and filter_functions:
             records = Record.objects.all().order_by('-timestamp')
             for filter_function in filter_functions:
                 qs = Record.objects.filter(filter_function).select_related("tester")
                 records &= qs
-        else:
+        elif search_query and search_query.strip():
             records = Record.objects.none()
 
-        tests = [list(x.pattest_set.all()) for x in records]
+        if tester:
+            records = records.filter(tester_id=tester)
+        if machine:
+            records = records.filter(machine_serial_no__pk=machine)
+        if location:
+            records = records.filter(location__icontains=location)
+        if timestamp_from:
+            records = records.filter(timestamp__gte=timestamp_from)
+        if timestamp_to:
+            records = records.filter(timestamp__lte=timestamp_to)
+        if passed in ('yes', 'no'):
+            failed_test = PatTest.objects.filter(record=OuterRef('pk')).filter(
+                Q(test_type=241) |
+                Q(test_type=242) & (
+                    Q(test_parameter_2='False') |
+                    (Q(test_parameter_1__isnull=True) &
+                     Q(test_parameter_2__isnull=True) &
+                     Q(test_parameter_3__isnull=True))
+                ) |
+                Q(test_type__in=range(243, 249)) &
+                (Q(test_parameter_1='False') | Q(test_parameter_1__isnull=True))
+            )
+            records = records.annotate(has_failed_test=Exists(failed_test))
+            records = records.filter(has_failed_test=(passed == 'no'))
+
+        records = records.select_related(
+            'item', 'tester', 'machine_serial_no'
+        ).prefetch_related('pattest_set')
+        records_paginator = Paginator(records, per_page)
+        records = records_paginator.get_page(page)
+        tests = Paginator([list(x.pattest_set.all()) for x in records], per_page).get_page(page)
         data = dict()
+
+        for record in records:
+            record.passed = all(test.passed for test in record.pattest_set.all() if test.passed is not None)
+
+        if search_type == "item_id" and search_query and search_query.strip():
+            latest_record = Record.objects.filter(
+                item__asset_id=search_query
+            ).order_by('-timestamp').prefetch_related('pattest_set').first()
+            if latest_record:
+                latest_record.passed = all(
+                    test.passed for test in latest_record.pattest_set.all()
+                    if test.passed is not None
+                )
+                if latest_record.passed is False:
+                    data['msg_warning'] = f"Item {latest_record.item.asset_id} has failed. Please place the item in a quarantine bin"
+                # The fixed 12-month threshold follows internal risk assessments;
+                # retest_freq_months is currently unused for this warning.
+                elif latest_record.timestamp < timezone.now() - timezone.timedelta(days=365):
+                    data['msg_warning'] = f"Item {latest_record.item.asset_id} is out of PAT. Please place the item in a quarantine bin"
+
+
+        data['page'] = page
         data['records_rendered'] = render_to_string('bts_asset_db/partials/record/partial_records_body.html',
-                                                    {'records': records})
+                                                    {'records': records, 'page': page})
         data['tests_rendered'] = render_to_string('bts_asset_db/partials/record/tests_table.html',
                                                   {'records': records, 'tests': tests})
+        data['pagination_rendered'] = render_to_string('bts_asset_db/partials/record/records_pagination.html',
+                                                       {'records': records, 'page': page, 'num_pages': records_paginator.num_pages})
+        data['msg_warning_rendered'] = render_to_string('bts_asset_db/partials/record/item_warning.html',
+                                                       {'msg_warning': data.get('msg_warning', '')})
         return JsonResponse(data, safe=False)
 
     else:

@@ -55,10 +55,48 @@
 
                 <button type="submit"
                         class="btn btn-success col-4 col-md-1 ml-3 ml-md-1 mb-3">
-                    <span>Search</span>
+                    <span id="search_button_spinner" class="fa fa-spinner fa-spin d-none"></span>
+                    <span id="search_button_text">Search</span>
                 </button>
             </fieldset>
+            <fieldset class="row">
+                <legend class="sr-only">Filter PAT records</legend>
+
+                <div class="form-group col-12 col-md-2 pr-md-1">
+                    <label for="id_tester">Tester</label>
+                    {{ form.tester }}
+                </div>
+
+                <div class="form-group col-12 col-md-2 px-md-1">
+                    <label for="id_machine">Machine</label>
+                    {{ form.machine }}
+                </div>
+
+                <div class="form-group col-12 col-md-2 px-md-1">
+                    <label for="id_passed">Passed?</label>
+                    {{ form.passed }}
+                </div>
+
+                <div class="form-group col-12 col-md-2 px-md-1">
+                    <label for="id_location">Location</label>
+                    {{ form.location }}
+                </div>
+
+                <div class="form-group col-12 col-md-2 px-md-1">
+                    <label for="id_timestamp_from">From</label>
+                    {{ form.timestamp_from }}
+                </div>
+
+                <div class="form-group col-12 col-md-2 pl-md-1">
+                    <label for="id_timestamp_to">To</label>
+                    {{ form.timestamp_to }}
+                </div>
+            </fieldset>
         </form>
+    </div>
+    
+    <div id="msg_area">
+        {% include 'bts_asset_db/partials/record/item_warning.html' %}
     </div>
 
     <div id="record_table">
@@ -73,17 +111,23 @@
                     <th class="d-none d-md-table-cell">Site</th>
                     <th class="d-none d-md-table-cell">Location</th>
                     <th>Tester</th>
-                    <th class="d-none d-md-table-cell">Testcode 1</th>
-                    <th class="d-none d-md-table-cell">Testcode 2</th>
-                    <th class="d-none d-lg-table-cell">Retest Frequency</th>
+                    <th class="d-none d-md-table-cell">Description</th>
+                    <th class="d-none d-md-table-cell">Passed</th>
                     <th>View Tests</th>
                 </tr>
             </thead>
+                  
             <tbody>
                 {% include 'bts_asset_db/partials/record/partial_records_body.html' %}
             </tbody>
         </table>
     </div>
+    
+    <div id="pagination">
+        {% include 'bts_asset_db/partials/record/records_pagination.html' %}
+    </div>
+
+ 
 
 
     <div class="modal fade"

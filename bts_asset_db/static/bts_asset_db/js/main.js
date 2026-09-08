@@ -422,6 +422,12 @@ function get_records(page=1)
         data : {
             search_type : $('#id_search_type').val(),
             search_query : $('#id_search_field').val(),
+            tester : $('#id_tester').val(),
+            machine : $('#id_machine').val(),
+            passed : $('#id_passed').val(),
+            location : $('#id_location').val(),
+            timestamp_from : $('#id_timestamp_from').val(),
+            timestamp_to : $('#id_timestamp_to').val(),
             page: page
         }, // data sent with the get request
 

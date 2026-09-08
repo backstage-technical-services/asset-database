@@ -1,12 +1,17 @@
 from django.forms import *
 from django.forms.utils import ErrorList
 from django.core.exceptions import ObjectDoesNotExist
-from .models import VisualTest, Item, Repair
+from .models import VisualTest, Item, Repair, Tester, TestingMachine
 
 
 class MuteErrorList(ErrorList):
     def __str__(self):
         return ""
+
+
+class MachineChoiceField(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.serial_number
 
 
 class ItemForm(Form):
@@ -16,7 +21,31 @@ class ItemForm(Form):
                               choices=options,
                               widget=Select(attrs={'class': 'custom-select'}))
     search_field = CharField(max_length=20,
+                             required=False,
                              widget=TextInput(attrs={'class': 'form-control'}))
+    tester = ModelChoiceField(queryset=Tester.objects.order_by('last_name', 'first_name'),
+                              required=False,
+                              empty_label='Any tester',
+                              widget=Select(attrs={'class': 'custom-select'}))
+    machine = MachineChoiceField(queryset=TestingMachine.objects.order_by('serial_number'),
+                                 required=False,
+                                 empty_label='Any machine',
+                                 widget=Select(attrs={'class': 'custom-select'}))
+    passed = ChoiceField(label='Passed',
+                         required=False,
+                         choices=(('', 'Any result'), ('yes', 'Passed'), ('no', 'Failed')),
+                         widget=Select(attrs={'class': 'custom-select'}))
+    location = CharField(max_length=15,
+                         required=False,
+                         widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Any location'}))
+    timestamp_from = DateTimeField(required=False,
+                                   input_formats=['%Y-%m-%dT%H:%M'],
+                                   widget=DateTimeInput(format='%Y-%m-%dT%H:%M',
+                                                        attrs={'class': 'form-control', 'type': 'datetime-local'}))
+    timestamp_to = DateTimeField(required=False,
+                                 input_formats=['%Y-%m-%dT%H:%M'],
+                                 widget=DateTimeInput(format='%Y-%m-%dT%H:%M',
+                                                      attrs={'class': 'form-control', 'type': 'datetime-local'}))
 
 
 class VisualAddForm(ModelForm):

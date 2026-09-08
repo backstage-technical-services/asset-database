@@ -1,22 +1,28 @@
 import os
+import subprocess
+from itertools import chain
 from traceback import print_exc
-from django.shortcuts import render
-from django.template.loader import render_to_string
-from django.http import JsonResponse, HttpResponse
-from django.urls import reverse
-from django.utils import timezone
+
+from django.contrib.auth.views import redirect_to_login
 from django.core import serializers
 from django.core.paginator import Paginator
-from django.db.models import Q, Count, Exists, OuterRef
-from django.contrib.auth.views import redirect_to_login
+from django.db.models import Count, Exists, OuterRef, Q
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils import timezone
 
 from bts_asset_db.importscripts import sss_import
-from bts_asset_db.importscripts.sss_errors import ImportJobCancelled, MachineNotFound, TesterNotFound
+from bts_asset_db.importscripts.sss_errors import (
+    ImportJobCancelled,
+    MachineNotFound,
+    TesterNotFound,
+)
 from bts_asset_db.signals import import_cancelled
+
 from .forms import *
 from .models import *
-from itertools import chain
-import subprocess
 
 
 def tokenise_search(search_query):
@@ -110,7 +116,9 @@ def get_records(request):
             records = records.annotate(has_failed_test=Exists(failed_test))
             records = records.filter(has_failed_test=(passed == 'no'))
 
-        records = records.prefetch_related('pattest_set')
+        records = records.select_related(
+            'item', 'tester', 'machine_serial_no'
+        ).prefetch_related('pattest_set')
         records_paginator = Paginator(records, per_page)
         records = records_paginator.get_page(page)
         tests = Paginator([list(x.pattest_set.all()) for x in records], per_page).get_page(page)

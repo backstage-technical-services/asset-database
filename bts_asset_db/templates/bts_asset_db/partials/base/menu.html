@@ -20,11 +20,21 @@
                         <li class="nav-item active"><span class="sr-only">Current: </span>
                     {% else %}
                         <li class="nav-item">
-                    {% endif %}
+                            {% endif %}
                             <a class="nav-link" href="{% url 'bts_asset_db:visual' %}">
                                 Visuals
                             </a>
                         </li>
+                        
+                        {% if page_id == "leaderboard" %}
+                            <li class="nav-item active"><span class="sr-only">Current: </span>
+                        {% else %}
+                            <li class="nav-item">
+                        {% endif %}
+                                <a class="nav-link" href="{% url 'bts_asset_db:leaderboard' %}">
+                                    Leaderboard
+                                </a>
+                            </li>
                     {% if user.is_staff %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'admin:index' %}">
@@ -33,10 +43,11 @@
                         </li>
                     {% endif %}
 
+
                     {% if user|has_import_permission %}
-                        {% if page_id == "import" %}
+                            {% if page_id == "import" %}
                             <li class="nav-item active"><span class="sr-only">Current: </span>
-                        {% else %}
+                                {% else %}
                             <li class="nav-item">
                         {% endif %}
                             <a class="nav-link" href="{% url 'bts_asset_db:import_home' %}">

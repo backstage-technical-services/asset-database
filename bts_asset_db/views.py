@@ -1,5 +1,6 @@
 import os
 import subprocess
+from calendar import monthrange
 from itertools import chain
 from traceback import print_exc
 
@@ -42,6 +43,80 @@ def index(request):
     context = {'form': ItemForm(),
                'navbar_search': NavBarSearchForm()}
     return render(request, 'bts_asset_db/record.html', context)
+
+
+def parse_session(session_str):
+    if session_str:
+        try:
+            month, year = session_str.split()
+            year = int(year)
+            month_number = {'january': 1, 'september': 9}.get(month.lower())
+            if month_number:
+                last_day = monthrange(year, month_number + 1)[1]
+                end_month = month_number + 1
+                return [
+                    timezone.datetime(year, month_number, 1),
+                    timezone.datetime(year, end_month, last_day),
+                ]
+        except (TypeError, ValueError):
+            pass
+    return None
+
+
+def leaderboard(request):
+    session = request.GET.get('session')
+    session_dates = parse_session(session)
+
+    visual_testers = Tester.objects.filter(archived=False)
+    pat_testers = Tester.objects.filter(archived=False)
+    if session_dates:
+        visual_testers = visual_testers.filter(
+            visual_test_set__timestamp__gte=session_dates[0],
+            visual_test_set__timestamp__lte=session_dates[1],
+        )
+        pat_testers = pat_testers.filter(
+            record__timestamp__gte=session_dates[0],
+            record__timestamp__lte=session_dates[1],
+        )
+
+    visuals = visual_testers.annotate(
+        visual_count=Count('visual_test_set')
+    ).filter(visual_count__gt=0).order_by(
+        '-visual_count', 'last_name', 'first_name'
+    )[:10]
+
+    pats = pat_testers.annotate(
+        pat_count=Count('record')
+    ).filter(pat_count__gt=0).order_by(
+        '-pat_count', 'last_name', 'first_name'
+    )[:10]
+
+    start_year = 2014
+    sessions = []
+    while start_year < timezone.now().year:
+        sessions.append(f'January {start_year}')
+        sessions.append(f'September {start_year}')
+        start_year += 1
+    sessions.append(f'January {start_year}')
+    if timezone.now().month > 8:
+        sessions.append(f'September {start_year}')
+
+    context = {
+        'visuals': visuals,
+        'pats': pats,
+        'visual_chart_data': [
+            {'label': str(tester), 'value': tester.visual_count}
+            for tester in visuals
+        ],
+        'pat_chart_data': [
+            {'label': str(tester), 'value': tester.pat_count}
+            for tester in pats
+        ],
+        'navbar_search': NavBarSearchForm(),
+        'pat_sessions': reversed(sessions),
+        'selected_session': session,
+    }
+    return render(request, 'bts_asset_db/leaderboard.html', context)
 
 
 def get_tests(request):

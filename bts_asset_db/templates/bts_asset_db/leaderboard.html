@@ -22,7 +22,7 @@
 
 {% block content %}
     <h2>Visuals</h2>
-    <div class="form-group float-right">
+    <div class="d-flex justify-content-end mb-3">
         <form method="get">
             <select onchange="this.form.submit()" class="form-control w-30" id="session" name="session">
                 {% for session in pat_sessions %}
@@ -31,50 +31,117 @@
             </select>
         </form>
     </div>
-    <table class="table table-bts" id="leaderboard_table">
-        <thead>
-            <tr>
-                <th>Position</th>
-                <th>Tester</th>
-                <th>Completed Visual Tests</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tester in visuals %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ tester }}</td>
-                    <td>{{ tester.visual_count }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="3">No tester results are available.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="row leaderboard-section">
+        <div class="col-12 col-lg-4 leaderboard-chart">
+            <canvas id="visual-leaderboard-chart" width="320" height="320"></canvas>
+            <ul class="list-unstyled" id="visual-leaderboard-legend"></ul>
+        </div>
+        <div class="col-12 col-lg-8">
+            <table class="table table-bts" id="visual-leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Tester</th>
+                        <th>Completed Visual Tests</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tester in visuals %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ tester }}</td>
+                            <td>{{ tester.visual_count }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No tester results are available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <h2>PAT Tests</h2>
-    <table class="table table-bts" id="leaderboard_table">
-        <thead>
-            <tr>
-                <th>Position</th>
-                <th>Tester</th>
-                <th>Completed PAT Tests</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tester in pats %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ tester }}</td>
-                    <td>{{ tester.pat_count }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="3">No tester results are available.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="row leaderboard-section">
+        <div class="col-12 col-lg-4 leaderboard-chart">
+            <canvas id="pat-leaderboard-chart" width="320" height="320"></canvas>
+            <ul class="list-unstyled" id="pat-leaderboard-legend"></ul>
+        </div>
+        <div class="col-12 col-lg-8">
+            <table class="table table-bts" id="pat-leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Tester</th>
+                        <th>Completed PAT Tests</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tester in pats %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ tester }}</td>
+                            <td>{{ tester.pat_count }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No tester results are available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block post-imports %}
+    {{ block.super }}
+    {{ visual_chart_data|json_script:"visual-leaderboard-data" }}
+    {{ pat_chart_data|json_script:"pat-leaderboard-data" }}
+    <script>
+        function renderLeaderboardChart(canvasId, dataId, legendId) {
+            const canvas = document.getElementById(canvasId);
+            const data = JSON.parse(document.getElementById(dataId).textContent);
+            const legend = document.getElementById(legendId);
+            const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#17a2b8', '#fd7e14', '#20c997', '#6610f2', '#e83e8c'];
+
+            data.forEach(function (item, index) {
+                const legendItem = document.createElement('li');
+                const swatch = document.createElement('span');
+                swatch.style.backgroundColor = colors[index % colors.length];
+                swatch.style.display = 'inline-block';
+                swatch.style.height = '0.75rem';
+                swatch.style.marginRight = '0.5rem';
+                swatch.style.width = '0.75rem';
+                legendItem.appendChild(swatch);
+                legendItem.appendChild(document.createTextNode(item.label + ' (' + item.value + ')'));
+                legend.appendChild(legendItem);
+            });
+
+            if (!canvas || !data.length) {
+                return;
+            }
+
+            const context = canvas.getContext('2d');
+            const center = canvas.width / 2;
+            const radius = center - 12;
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            let startAngle = -Math.PI / 2;
+
+            data.forEach(function (item, index) {
+                const sliceAngle = item.value / total * Math.PI * 2;
+                context.beginPath();
+                context.moveTo(center, center);
+                context.arc(center, center, radius, startAngle, startAngle + sliceAngle);
+                context.closePath();
+                context.fillStyle = colors[index % colors.length];
+                context.fill();
+                startAngle += sliceAngle;
+            });
+        }
+
+        renderLeaderboardChart('visual-leaderboard-chart', 'visual-leaderboard-data', 'visual-leaderboard-legend');
+        renderLeaderboardChart('pat-leaderboard-chart', 'pat-leaderboard-data', 'pat-leaderboard-legend');
+    </script>
 {% endblock %}

@@ -104,6 +104,14 @@ def leaderboard(request):
     context = {
         'visuals': visuals,
         'pats': pats,
+        'visual_chart_data': [
+            {'label': str(tester), 'value': tester.visual_count}
+            for tester in visuals
+        ],
+        'pat_chart_data': [
+            {'label': str(tester), 'value': tester.pat_count}
+            for tester in pats
+        ],
         'navbar_search': NavBarSearchForm(),
         'pat_sessions': reversed(sessions),
         'selected_session': session,

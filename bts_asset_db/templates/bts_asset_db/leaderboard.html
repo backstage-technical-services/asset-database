@@ -1,0 +1,80 @@
+{% extends "bts_asset_db/base.html" %}
+
+{% block title %}PAT Testing - Leaderboard{% endblock %}
+
+{% block body_wrapper %}
+    {% with page_section="leaderboard" page_id="leaderboard" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block menu %}
+    {% with page_id="leaderboard" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block fancy_header %}
+    {% with header_main="Leaderboard" %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+    <h2>Visuals</h2>
+    <div class="form-group float-right">
+        <form method="get">
+            <select onchange="this.form.submit()" class="form-control w-30" id="session" name="session">
+                {% for session in pat_sessions %}
+                    <option value="{{ session }}"{% if session == selected_session %} selected{% endif %}>{{ session }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <table class="table table-bts" id="leaderboard_table">
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Tester</th>
+                <th>Completed Visual Tests</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tester in visuals %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ tester }}</td>
+                    <td>{{ tester.visual_count }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No tester results are available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>PAT Tests</h2>
+    <table class="table table-bts" id="leaderboard_table">
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Tester</th>
+                <th>Completed PAT Tests</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tester in pats %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ tester }}</td>
+                    <td>{{ tester.pat_count }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No tester results are available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

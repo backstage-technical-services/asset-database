@@ -25,6 +25,7 @@
     <div class="d-flex justify-content-end mb-3">
         <form method="get">
             <select onchange="this.form.submit()" class="form-control w-30" id="session" name="session">
+                <option value=""{% if not selected_session %} selected{% endif %}>All time</option>
                 {% for session in pat_sessions %}
                     <option value="{{ session }}"{% if session == selected_session %} selected{% endif %}>{{ session }}</option>
                 {% endfor %}

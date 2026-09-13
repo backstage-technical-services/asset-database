@@ -1,0 +1,18 @@
+body {
+    border: 3px solid #ffcf00;
+    box-sizing: border-box;
+    min-height: 100vh;
+}
+
+body::before {
+    background: #ffcf00;
+    color: #000;
+    content: "DEVELOPMENT";
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    padding: 0.25rem 0.75rem;
+    text-align: center;
+}

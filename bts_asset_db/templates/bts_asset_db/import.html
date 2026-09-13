@@ -27,7 +27,7 @@
                 const data = await res.json();
                 document.getElementById("progress").style.width = data.processed_percentage + "%";
                 document.getElementById("progress").setAttribute("aria-valuenow", data.processed_percentage);
-                document.getElementById("records").innerText = data.processed_records + "/" + data.total_records + " records processed. " + data.processed_percentage + "%";
+                document.getElementById("records").innerText = data.processed_records + "/" + data.total_records + " records processed. " + data.processed_percentage + "%" + ". " + data.skipped_records + " skipped.";
                 if (data.state === "completed") {
                     document.getElementById("progress").classList.remove("progress-bar-striped");
                     document.getElementById("progress").classList.remove("progress-bar-animated");

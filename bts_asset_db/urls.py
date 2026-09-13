@@ -8,6 +8,8 @@ app_name = 'bts_asset_db'
 urlpatterns = [
     # ex: 
     path('', views.index, name='index'),
+    # ex: leaderboard/
+    path('leaderboard/', views.leaderboard, name='leaderboard'),
     # ex: records/
     path('records/', views.get_records, name='records'),
     # ex: assets/

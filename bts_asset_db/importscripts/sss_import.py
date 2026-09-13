@@ -112,7 +112,7 @@ def read_sss(file_contents):
                 machine=TestingMachine.objects.get(serial_number=machine_serial)
             )
 
-    if processed_records == records_skipped:
+    if processed_records > 0 and processed_records == records_skipped:
         logging.warning("All records were skipped, marking job as failed")
         raise Exception("All records were skipped due to being older than the last imported record time (to prevent duplicates). Override this in the admin panel.")
     # Only complete the job if transaction succeeded

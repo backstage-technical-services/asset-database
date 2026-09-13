@@ -73,20 +73,20 @@
             <div id="progress_container" class="progress mt-4">
                 <div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ job.processed_percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ job.processed_percentage }}%"></div>
             </div>
-            <p id="records">{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%</p>
+            <p id="records">{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%. {{ job.skipped_records }} skipped.</p>
             <script>start_refresh()</script>
         {% endif %}
         {% if state == 'cancelled' or state == 'failed' %}
             <div class="progress mt-4">
                 <div class="progress-bar progress-bar-striped bg-danger" role="progressbar" aria-valuenow="{{ job.processed_percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ job.processed_percentage }}%"></div>
             </div>
-            <p>{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%</p>
+            <p>{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%. {{ job.skipped_records }} skipped.</p>
         {% endif %}
         {% if state == 'completed' %}
             <div class="progress mt-4">
                 <div class="progress-bar progress-bar-striped bg-success" role="progressbar" aria-valuenow="{{ job.processed_percentage }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ job.processed_percentage }}%"></div>
             </div>
-            <p>{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%</p>
+            <p>{{ job.processed_records }}/{{ job.total_records }} records processed. {{ job.processed_percentage }}%. {{ job.skipped_records }} skipped.</p>
         {% endif %}
         {% if state == 'ready' %}
             <div id="preamble" class="row">
@@ -172,6 +172,7 @@
                                     <div class="modal-body">
                                         <p><strong>State:</strong> {{ job.status }}</p>
                                         <p><strong>Processed records:</strong> {{ job.processed_records }}/{{ job.total_records }}</p>
+                                        <p><strong>Skipped records:</strong> {{ job.skipped_records }}</p>
                                         {% if job.status == 'failed' %}
                                             <p class="text-danger"><strong>Error:</strong> {{ job.error_message }}</p>
                                         {% endif %}

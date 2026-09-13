@@ -193,6 +193,7 @@ class ImportJob(models.Model):
     error_message = models.TextField(null=True, blank=True)
     total_records = models.IntegerField(default=0) 
     processed_records = models.IntegerField(default=0)
+    skipped_records = models.IntegerField(default=0)
     machine = models.ForeignKey('TestingMachine', on_delete=models.PROTECT, null=True, blank=True)
     user = models.ForeignKey('auth.User', on_delete=models.PROTECT, null=True, blank=True)
     filename = models.CharField(max_length=255, null=True, blank=True)

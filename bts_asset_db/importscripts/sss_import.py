@@ -65,6 +65,7 @@ def read_sss(file_contents):
     records = iter(records)
     logging.info(f"Starting import job with {total_records} records to process")
     processed_records = 0
+    records_skipped = 0
     try:
         with transaction.atomic():
             logging.info("Transaction started")
@@ -78,7 +79,9 @@ def read_sss(file_contents):
                 except StopIteration:
                     # file parsing complete
                     break
-                parse_record(payload)
+                res = parse_record(payload)
+                if res == "skipped":
+                    records_skipped += 1
 
             # Check if all records were processed before committing
             updated_job = ImportJob.objects.filter(id=job.id).first()
@@ -102,12 +105,16 @@ def read_sss(file_contents):
     finally:
         ImportJob.objects.filter(id=job.id).update(
             processed_records=processed_records,
+            skipped_records=records_skipped
         )
         if machine_serial:
             ImportJob.objects.filter(id=job.id).update(
                 machine=TestingMachine.objects.get(serial_number=machine_serial)
             )
 
+    if processed_records > 0 and processed_records == records_skipped:
+        logging.warning("All records were skipped, marking job as failed")
+        raise Exception("All records were skipped due to being older than the last imported record time (to prevent duplicates). Override this in the admin panel.")
     # Only complete the job if transaction succeeded
     ImportJob.objects.filter(status='running').first().complete()
 
@@ -170,6 +177,8 @@ def parse_record(payload):
         for entry in entries_to_create:
             entry.record = record
             entry.save()
+    else:
+        return "skipped"
 
 
 def export_record(record, data, test_type):

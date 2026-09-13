@@ -9,6 +9,8 @@ class ItemAdmin(admin.ModelAdmin):
 
 class TestingMachineAdmin(admin.ModelAdmin):
     list_display = ('id', 'serial_number', 'last_imported_record_time')
+    readonly_fields = ('serial_number',)
+
     def has_add_permission(self, request):
         return False
     def has_change_permission(self, request, obj=None):

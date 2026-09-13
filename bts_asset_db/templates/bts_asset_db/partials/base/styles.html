@@ -2,6 +2,9 @@
 
 {% block styles %}
     <link rel="stylesheet" type="text/css" href="{%  static "bts_asset_db/css/main.css" %}">
+    {% if True %}
+        <link rel="stylesheet" type="text/css" href="{% static "bts_asset_db/css/development.css" %}">
+    {% endif %}
     <!--<link rel="stylesheet" type="text/css" href="{% static "bts_asset_db/vendors.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "bts_asset_db/style.css" %}">
     <link rel="stylesheet" type="text/css" href="{% static "bts_asset_db/structure.main.css" %}">

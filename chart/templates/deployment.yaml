@@ -28,6 +28,8 @@ spec:
               value: '3306'
             - name: DB_NAME
               value: asset_database_{{ .Values.environment }}
+            - name: APP_ENVIRONMENT
+              value: {{ .Values.environment }}
             - name: SMTP_HOST
               value: {{ .Values.smtp.host }}
             - name: SMTP_PORT

@@ -79,6 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'bts_asset_db.context_processors.environment',
             ],
         },
     },
@@ -93,6 +94,8 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 # We have to force this on to serve static files using the django server
 DEBUG = True
+APP_ENVIRONMENT = os.environ.get('APP_ENVIRONMENT', 'development')
+IS_DEVELOPMENT = APP_ENVIRONMENT == 'development'
 
 DATABASES = {
     'default': {

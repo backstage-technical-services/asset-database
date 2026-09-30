@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'bts_asset_db.context_processors.environment',
             ],
         },
     },
@@ -88,6 +89,8 @@ DATABASE_ROUTERS = ['bts_core.dbrouters.AssetDbRouter']
 SECRET_KEY = os.environ['BTS_ASSET_DB_SECRET_KEY']
 
 DEBUG = True
+APP_ENVIRONMENT = os.environ.get('APP_ENVIRONMENT', 'development')
+IS_DEVELOPMENT = APP_ENVIRONMENT == 'development'
 
 DATABASES = {
     'default': {
